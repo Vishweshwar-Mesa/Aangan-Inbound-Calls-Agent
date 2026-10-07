@@ -71,12 +71,17 @@ export async function runPostCallActions(
     }
 
     try {
-      await sendDesignerBrief({
+      const result = await sendDesignerBrief({
+        callId,
         bookedAt,
         brief: brief ?? "(brief unavailable)",
         callUrl: `${process.env.APP_URL ?? ""}/calls/${callId}`,
       });
-      await db.update(calls).set({ telegramSentAt: new Date() }).where(eq(calls.id, callId));
+      // Outside 7pm-9am IST sending hours, sent is false and telegram_sent_at
+      // stays null — that IS the "queued for the 9am cron" state.
+      if (result.sent) {
+        await db.update(calls).set({ telegramSentAt: new Date() }).where(eq(calls.id, callId));
+      }
     } catch (error) {
       stepErrors.telegram = errorMessage(error);
     }

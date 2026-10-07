@@ -96,6 +96,10 @@ export const calls = pgTable(
     brief: text("brief"),
     telegramSentAt: timestamp("telegram_sent_at", { withTimezone: true }),
     telegramAckAt: timestamp("telegram_ack_at", { withTimezone: true }),
+    // Not in CLAUDE.md's original column list — added in Phase 3 so the cron
+    // job doesn't re-send the 30-minute reminder every 10 minutes. See
+    // docs/DECISIONS.md D15.
+    reminderSentAt: timestamp("reminder_sent_at", { withTimezone: true }),
     hubspotContactId: text("hubspot_contact_id"),
     hubspotDealId: text("hubspot_deal_id"),
     reviewOutcome: text("review_outcome"),

@@ -13,10 +13,12 @@
     "replay": "tsx scripts/replay.ts"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.131.0",
     "@auth/drizzle-adapter": "^1.11.3",
     "@base-ui/react": "^1.8.0",
     "@google/genai": "^2.27.0",
     "@neondatabase/serverless": "^1.2.0",
+    "chrono-node": "^2.10.2",
     "class-variance-authority": "^0.7.1",
     "cn": "^0.4.0",
     "drizzle-orm": "^0.45.3",

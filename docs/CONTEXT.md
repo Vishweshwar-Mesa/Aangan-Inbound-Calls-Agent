@@ -1,70 +1,70 @@
 # Context — current state
 
 Rewritten in place after every change. Keep it under 150 lines. Last updated:
-2026-10-07, end of Phase 2.
+2026-10-07, end of Phase 3.
 
 ## Where we are
 
-- **Phase:** 2 (call-ended webhook) — done.
-- **Next step:** Phase 3, the post-call actions (Cal.com, Claude brief,
-  Telegram, HubSpot) — `lib/calcom.ts`, `lib/claude.ts`, `lib/telegram.ts`,
-  `lib/hubspot.ts` are still stubs that throw "not implemented until Phase 3";
-  `lib/post-call.ts` already calls them and logs each failure to
-  `step_errors`, so Phase 3 only needs to fill in their bodies.
+- **Phase:** 3 (post-call actions) — done.
+- **Next step:** Phase 4, the dashboard. All of Phase 3's integrations are
+  implemented against real API shapes but **not yet exercised against live
+  accounts** — no Cal.com/Telegram/HubSpot/Anthropic credentials in this
+  session. Run `npm run replay` once credentials are in `.env.local` and
+  check `step_errors` on the resulting row for any integration that needs
+  fixing.
 
 ## What exists in the repo
 
-Phase 1 scaffold (Next.js, Tailwind, shadcn/ui, Drizzle schema/migration,
-Auth.js login, `proxy.ts` gate) — unchanged, see git history.
+Phases 1–2 (scaffold, auth, the call-ended webhook) — unchanged, see git
+history.
 
-Phase 2 additions:
-- `app/api/vani/call-ended/route.ts` — `POST` handler:
-  1. Verifies `x-webhook-secret` against `VANI_WEBHOOK_SECRET`.
-  2. Normalizes via `lib/vani.ts`, upserts on `vani_call_id`
-     (`onConflictDoUpdate`), always storing `raw_payload`.
-  3. If the row already has `final_route`, returns 200 immediately
-     (idempotent — a replayed call id does nothing twice).
-  4. If there's no transcript (missed/failed call), stores a reason and
-     returns — nothing for Gemini to score.
-  5. Calls `rescoreCall()` (Gemini), applies the disagreement rules from
-     `rubric.txt` section 7, sets `final_route`/`flags`.
-  6. Returns 200, then runs `lib/post-call.ts`'s `runPostCallActions()` via
-     `after()` so Cal.com/Claude/Telegram/HubSpot latency can't hold up
-     Vani's response.
-- `lib/vani.ts` — `normalizeVaniPayload()` implemented against
-  `seed/payloads/sample-call-ended.json`'s `_ASSUME` shape. Throws if
-  `call_id` is missing (can't upsert without it); the route returns 400 in
-  that case. **Update only this function** once a real Vani payload arrives.
-- `lib/gemini.ts` — `rescoreCall()`: reads `rubric.txt` from disk (cached
-  after first read), calls Gemini (`@google/genai`) at temperature 0 with
-  `responseMimeType: "application/json"`, validates the response with Zod
-  against rubric section 7 plus `price_mentioned`. Retries once on any
-  failure (bad JSON or a failed call); still invalid after the retry ->
-  returns `{ valid: false, route: "NEEDS_REVIEW", ... }`, which the route
-  handler trusts unconditionally (bypasses the disagreement rules).
-- `lib/post-call.ts` — new module, `runPostCallActions(callId, opts)`. Not
-  one of the Phase 1 per-service modules; it orchestrates across them.
-  Kept reusable: Phase 4's review queue "Send to designer" action will call
-  it with `{ skipBooking: true }`.
-- `next.config.ts` — added `outputFileTracingIncludes` for the webhook route
-  so `rubric.txt` ships inside the deployed serverless function (plain
-  `fs.readFileSync` of an untracked file would otherwise go missing on
-  Vercel).
-- `scripts/replay.ts` (`npm run replay`) — posts
-  `seed/payloads/sample-call-ended.json` to the local webhook.
+Phase 3 additions:
+- `lib/pricing.ts` — the internal per-sq-ft bands from pricing.md, residential
+  and commercial, plus `estimateRanges()`. Never exposed to a caller surface.
+- `lib/claude.ts` — `writeDesignerBrief()`: calls Anthropic with the call's
+  structured fields + computed pricing ranges, asks for ≤120 words ending in
+  an `Internal — never share:` line.
+- `lib/calcom.ts` — `bookConsultation()`: fetches Cal.com v2 slots for the
+  next 5 working days, parses the caller's natural-language preferred times
+  with `chrono-node`, matches within a 90-minute tolerance or falls back to
+  the nearest slot after the earliest preference, then books it.
+- `lib/telegram.ts` — `sendDesignerBrief()` (HTML, inline "Got it" button,
+  skips sending 7pm–9am IST — the call's `telegram_sent_at` staying null
+  **is** the "queued" state), `sendEscalation()`, `sendReminder()`.
+- `lib/hubspot.ts` — `upsertContactAndDeal()`: finds a contact by email then
+  phone, creates one if neither matches, looks up the "Consultation booked"
+  deal stage by label (cached after first lookup), creates the deal with
+  `ai_call_cost_inr` and a contact association.
+- `app/api/telegram/route.ts` — verifies
+  `X-Telegram-Bot-Api-Secret-Token`; on an `ack:<callId>` callback, sets
+  `telegram_ack_at`, answers the callback, edits the message to
+  "✅ Acknowledged".
+- `app/api/cron/route.ts` — verifies `Authorization: Bearer <CRON_SECRET>`.
+  Sends any queued (after-hours) briefs if now within sending hours; reminds
+  the designer + escalation chat for any `QUALIFIED` call unacknowledged 30+
+  minutes after `telegram_sent_at` (guarded by the new `reminder_sent_at` so
+  it only fires once — see DECISIONS D15).
+- `lib/db/schema.ts` — added `reminder_sent_at` (D15); migration
+  `drizzle/0001_tiresome_cardiac.sql`.
+- **Bug found and fixed:** `lib/db.ts`, `drizzle.config.ts`, `lib/claude.ts`,
+  `lib/gemini.ts` used `??` for their env-var fallbacks. Once `.env.local`
+  existed with those vars present-but-empty (not unset), `??` no longer fell
+  back (it only catches `null`/`undefined`, not `""`), so the placeholder
+  DB connection string silently became an empty string. All four now use
+  `||`. Caught by testing `/api/cron` after `.env.local` was created.
 
 ## Built and working
 
-- Everything above compiles (`npm run build` clean) and was smoke-tested
-  against the local dev server without real credentials:
-  - missing/wrong `x-webhook-secret` -> 401
-  - malformed JSON body -> 400
-  - payload without `call_id` -> 400
-  - a valid payload with the secret reaches the database call and fails
-    only on `ECONNREFUSED` to the placeholder `localhost:5432` — i.e. the
-    whole pipeline before the DB write is confirmed correct.
-- Not yet exercised against a real database or Gemini: no `DATABASE_URL` or
-  `GEMINI_API_KEY` in this session.
+- Everything compiles (`npm run build` clean). `.env.local` exists this
+  session with `GEMINI_API_KEY`, `RESEND_API_KEY`, and generated
+  `AUTH_SECRET`/`VANI_WEBHOOK_SECRET`/`TELEGRAM_WEBHOOK_SECRET`/
+  `CRON_SECRET` — confirmed gitignored and not committed.
+- Smoke-tested without a live database: `/api/telegram` and `/api/cron` both
+  401 without their secret; `/api/cron`, once authenticated, reaches the
+  database query and fails only on `ECONNREFUSED` to the placeholder DB URL.
+- Not yet tested: Cal.com, Telegram Bot API, HubSpot, or Anthropic calls —
+  no credentials for any of them in this session, and no live database to
+  drive a real call through `runPostCallActions()`.
 
 ## In progress
 
@@ -72,55 +72,62 @@ Phase 2 additions:
 
 ## Env vars
 
-| Var | Status |
-| --- | --- |
-| `DATABASE_URL`, `DATABASE_URL_UNPOOLED` | placeholder — fill in from Neon |
-| `RESEND_API_KEY` | placeholder |
-| `AUTH_SECRET` | placeholder — `openssl rand -base64 33` |
-| `ALLOWED_EMAILS` | placeholder — your sign-in email(s) |
-| `APP_URL` | placeholder — `http://localhost:3000` for local dev |
-| `VANI_WEBHOOK_SECRET` | placeholder — any random string for now; Vani's real header/signature scheme is still unknown |
-| `GEMINI_API_KEY`, `GEMINI_MODEL` | placeholder — `rescoreCall()` falls back to `"gemini-2.0-flash"` if `GEMINI_MODEL` is unset |
-| Everything else (`VANI_API_KEY`, `CALCOM_*`, `TELEGRAM_*`, `HUBSPOT_*`, `ANTHROPIC_*`, `CRON_SECRET`, `DESIGNER_NAME`) | placeholder, untouched — Phase 3 |
+Still placeholder: `DATABASE_URL`, `DATABASE_URL_UNPOOLED`, `ALLOWED_EMAILS`,
+`VANI_API_KEY`, `VANI_AGENT_ID`, `VANI_PHONE_NUMBER`, `CALCOM_API_KEY`,
+`CALCOM_EVENT_TYPE_ID`, `TELEGRAM_BOT_TOKEN`, `TELEGRAM_DESIGNER_CHAT_ID`,
+`TELEGRAM_ESCALATION_CHAT_ID`, `HUBSPOT_PRIVATE_APP_TOKEN`,
+`ANTHROPIC_API_KEY`, `ANTHROPIC_MODEL`, `DESIGNER_NAME`.
+
+Set this session (in `.env.local`, not committed): `GEMINI_API_KEY`,
+`GEMINI_MODEL`, `RESEND_API_KEY`, `AUTH_SECRET`, `VANI_WEBHOOK_SECRET`,
+`TELEGRAM_WEBHOOK_SECRET`, `CRON_SECRET`, `APP_URL` (`localhost:3000`).
 
 ## Open assumptions
 
-- The Vani call-ended payload shape is unknown; `lib/vani.ts` matches only
-  the kit's placeholder (`seed/payloads/sample-call-ended.json`'s
-  `_ASSUME`). Needs a real payload to verify.
-- How Vani actually sends the webhook secret (header vs. signature) is
-  unknown — currently a plain `x-webhook-secret` header per CLAUDE.md step 1.
-- A call with no transcript (missed/failed) is left with `final_route`
-  unset and a note in `reasons`, rather than routed anywhere — not specified
-  in CLAUDE.md's Phase 2 steps, this is a gap-filling choice. Revisit once
-  real missed-call payloads are seen.
-- Three Nikhil confirmations are pending (see DECISIONS D13).
-- Consultation-to-won rate is unknown (20% is used only for illustration).
-- `lib/auth.ts` hardcodes the Resend "from" address
-  (`Aangan Leads <onboarding@resend.dev>`); update once there's a verified
-  sending domain.
+- Cal.com v2 header `cal-api-version`: `2024-09-04` for `/slots`,
+  `2026-02-25` for `/bookings`. Taken from Cal.com's docs at build time —
+  re-verify before go-live, since Cal.com bumps these periodically.
+- HubSpot's contact-to-deal `associationTypeId: 5` (`HUBSPOT_DEFINED`) is
+  assumed stable; spot-check if a deal comes back unassociated.
+- "Front desk chat" in the cron reminder reuses `TELEGRAM_ESCALATION_CHAT_ID`
+  — no separate env var exists (DECISIONS D16).
+- The HubSpot deal stage must be labelled exactly "Consultation booked"
+  (case-insensitive match) — create it before Phase 3 goes live (steps
+  below).
+- The custom deal property `ai_call_cost_inr` must exist in HubSpot before
+  deals can be created with it (steps below) — a Number property.
+- Preferred-time matching uses `chrono-node` on natural-language strings
+  ("this week, morning") with a 90-minute tolerance window; not exact.
+- Prior open items unchanged: Vani payload shape (D-pending), Vani webhook
+  auth scheme, missed-call handling, three Nikhil confirmations (D13),
+  consultation-to-won rate.
 
 ## Known bugs
 
-- None.
+- None currently open (see "Bug found and fixed" above for one caught and
+  resolved this session).
 
 ## Run / test / deploy
 
-1. `npm install` (already done).
-2. Copy `.env.example` to `.env.local`, fill in `DATABASE_URL`,
-   `DATABASE_URL_UNPOOLED` (Neon), `RESEND_API_KEY`, `AUTH_SECRET`
-   (`openssl rand -base64 33`), `ALLOWED_EMAILS`, `APP_URL`,
-   `VANI_WEBHOOK_SECRET` (any random string), `GEMINI_API_KEY`,
-   `GEMINI_MODEL` (e.g. `gemini-2.0-flash`).
-3. `npm run db:migrate` to apply the schema to Neon.
-4. `npm run dev`, confirm login (see Phase 1 steps).
-5. `npm run replay` — posts the sample payload to the local webhook. Check
-   the `calls` table (`npm run db:studio`) for a new row with `final_route`
-   set and `raw_payload` populated. `step_errors` will show Cal.com/
-   Claude/Telegram/HubSpot failures ("not implemented until Phase 3") —
-   expected until Phase 3.
-6. `npm run build` to confirm the production build is clean.
-7. Push to GitHub, import in Vercel, set the same env vars there.
+1. `npm install` (done).
+2. `.env.local` already has Gemini/Resend/generated secrets. Still add:
+   `DATABASE_URL`/`DATABASE_URL_UNPOOLED` (Neon), `ALLOWED_EMAILS`,
+   `CALCOM_API_KEY`/`CALCOM_EVENT_TYPE_ID`, `TELEGRAM_BOT_TOKEN`/
+   `TELEGRAM_DESIGNER_CHAT_ID`/`TELEGRAM_ESCALATION_CHAT_ID`,
+   `HUBSPOT_PRIVATE_APP_TOKEN`, `ANTHROPIC_API_KEY`.
+3. **HubSpot, once:** Settings > Data Management > Deal pipelines — add a
+   stage labelled exactly "Consultation booked". Settings > Data Management
+   > Properties > Deal properties > Create property — Number, internal name
+   `ai_call_cost_inr`.
+4. **Telegram, once:** after setting `TELEGRAM_BOT_TOKEN` and
+   `TELEGRAM_WEBHOOK_SECRET`, point the bot at the webhook:
+   `curl -X POST https://api.telegram.org/bot$TELEGRAM_BOT_TOKEN/setWebhook -d url=$APP_URL/api/telegram -d secret_token=$TELEGRAM_WEBHOOK_SECRET`.
+5. **Cron, once deployed:** schedule a GET every 10 minutes from
+   cron-job.org to `$APP_URL/api/cron` with header
+   `Authorization: Bearer <CRON_SECRET>`.
+6. `npm run db:migrate`, `npm run dev`, `npm run replay` — check the new
+   row's `step_errors` for anything still failing.
+7. `npm run build` to confirm the production build is clean.
 
 ## Pass bars
 

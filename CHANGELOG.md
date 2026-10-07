@@ -2,6 +2,31 @@
 
 One entry per commit, newest first: date, what changed, files, how tested.
 
+## 2026-10-07 — phase-3: post-call actions
+- `lib/pricing.ts`: internal per-sq-ft bands (residential/commercial),
+  never caller-facing.
+- `lib/claude.ts`: `writeDesignerBrief()` via Anthropic, ≤120 words,
+  internal pricing range labelled "never share".
+- `lib/calcom.ts`: `bookConsultation()` — Cal.com v2 slots + booking,
+  `chrono-node` for matching natural-language preferred times.
+- `lib/telegram.ts`: `sendDesignerBrief()` (after-hours queuing via a null
+  `telegram_sent_at`), `sendEscalation()`, `sendReminder()`.
+- `lib/hubspot.ts`: `upsertContactAndDeal()` — contact find-or-create,
+  "Consultation booked" stage lookup by label, deal + association.
+- `app/api/telegram/route.ts`: the "Got it" callback handler.
+- `app/api/cron/route.ts`: sends queued briefs, sends the 30-minute
+  reminder once per call (new `reminder_sent_at` column — DECISIONS D15).
+- Fixed a real bug: `lib/db.ts`, `drizzle.config.ts`, `lib/claude.ts`,
+  `lib/gemini.ts` used `??` for env-var fallbacks, which doesn't catch an
+  env var that's present-but-empty (as `.env.local` can leave it) — only
+  `null`/`undefined`. Switched all four to `||`. Found by testing
+  `/api/cron` after creating `.env.local`.
+- Tested without live Cal.com/Telegram/HubSpot/Anthropic/database
+  credentials: `/api/telegram` and `/api/cron` 401 without their secret;
+  `/api/cron`, once authenticated, reaches its database query and fails
+  only on the placeholder DB connection. `npm run build` is clean. Not yet
+  run against real accounts for any of the four integrations.
+
 ## 2026-10-07 — phase-2: the call-ended webhook
 - Added `POST /api/vani/call-ended`: verifies `x-webhook-secret`, upserts on
   `vani_call_id` (idempotent — a call with `final_route` already set returns

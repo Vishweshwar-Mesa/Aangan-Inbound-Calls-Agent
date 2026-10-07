@@ -1,0 +1,1 @@
+ALTER TABLE "calls" ADD COLUMN "reminder_sent_at" timestamp with time zone;

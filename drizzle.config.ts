@@ -7,6 +7,8 @@ export default defineConfig({
   dialect: "postgresql",
   dbCredentials: {
     // Direct (unpooled) connection — migrations shouldn't go through PgBouncer.
-    url: process.env.DATABASE_URL_UNPOOLED ?? "postgresql://user:password@localhost:5432/aangan",
+    // `||` not `??`: an empty-string env var (unset in .env.local) must also
+    // fall back, and `??` only catches null/undefined.
+    url: process.env.DATABASE_URL_UNPOOLED || "postgresql://user:password@localhost:5432/aangan",
   },
 });

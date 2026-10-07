@@ -115,3 +115,30 @@ that's never exposed to the client.
 **Why:** One Postgres provider, one auth flow, as directed.
 **Rejected:** D09's "Supabase for auth only" fallback, and Postgres RLS as the
 enforcement layer — not available outside Supabase.
+
+### 2026-10-07 · D15 · Added `reminder_sent_at` column (extends the Phase 1 schema)
+**Decision:** Added a `reminder_sent_at timestamptz` column to `calls`, not
+in CLAUDE.md's original column list, so the cron job's "remind the designer
+after 30 unacknowledged minutes" step doesn't re-fire every 10 minutes
+forever. Set once a reminder is sent; the cron job skips any call that
+already has it.
+**Why:** `telegram_sent_at`/`telegram_ack_at` alone can't distinguish
+"never reminded" from "already reminded, still unacknowledged" — without a
+marker, every cron run (every ~10 min, since Vercel's free plan only runs
+cron once a day — see CLAUDE.md Phase 3) would re-send the reminder.
+**Rejected:** Re-using `step_errors` as a marker (overloads a field meant
+for failures with normal-path state); always re-sending (spams the
+designer and the escalation chat).
+
+### 2026-10-07 · D16 · "Front desk chat" in the cron reminder reuses `TELEGRAM_ESCALATION_CHAT_ID`
+**Decision:** CLAUDE.md's cron spec says the 30-minute-unacknowledged
+reminder "alerts the front desk chat", but no separate env var for a
+front-desk chat exists — only `TELEGRAM_DESIGNER_CHAT_ID` and
+`TELEGRAM_ESCALATION_CHAT_ID`. `lib/telegram.ts`'s `sendReminder()` sends
+the escalation half of the reminder to `TELEGRAM_ESCALATION_CHAT_ID`.
+**Why:** That chat already carries other front-desk-relevant alerts
+(existing-client escalations, prices spoken), so it's the closest existing
+fit rather than inventing a new env var unprompted.
+**Rejected:** Adding a new `TELEGRAM_FRONTDESK_CHAT_ID` env var without
+being asked. Revisit if a dedicated front-desk chat turns out to be wanted —
+trivial to add later.
