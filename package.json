@@ -9,11 +9,13 @@
     "lint": "eslint",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
-    "db:studio": "drizzle-kit studio"
+    "db:studio": "drizzle-kit studio",
+    "replay": "tsx scripts/replay.ts"
   },
   "dependencies": {
     "@auth/drizzle-adapter": "^1.11.3",
     "@base-ui/react": "^1.8.0",
+    "@google/genai": "^2.27.0",
     "@neondatabase/serverless": "^1.2.0",
     "class-variance-authority": "^0.7.1",
     "cn": "^0.4.0",

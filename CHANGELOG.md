@@ -2,6 +2,33 @@
 
 One entry per commit, newest first: date, what changed, files, how tested.
 
+## 2026-10-07 — phase-2: the call-ended webhook
+- Added `POST /api/vani/call-ended`: verifies `x-webhook-secret`, upserts on
+  `vani_call_id` (idempotent — a call with `final_route` already set returns
+  200 and does nothing more), re-scores with Gemini, applies the rubric's
+  disagreement rules, and runs post-call actions via `after()` so they can't
+  block Vani's response. File: `app/api/vani/call-ended/route.ts`.
+- Implemented `normalizeVaniPayload()` against the kit's placeholder payload
+  shape. File: `lib/vani.ts`.
+- Implemented `rescoreCall()`: Gemini at temperature 0, system prompt is the
+  full `rubric.txt` plus the JSON-only/`price_mentioned` instruction, Zod
+  validation, one retry, falls back to `NEEDS_REVIEW` if still invalid.
+  File: `lib/gemini.ts`.
+- Added `lib/post-call.ts`: calls the Phase 3 stubs (Cal.com, Claude,
+  Telegram, HubSpot) for `QUALIFIED`/`ESCALATE`, each in its own try/catch
+  logging to `step_errors` — ready for Phase 3 to fill in the bodies with no
+  changes needed here.
+- Added `outputFileTracingIncludes` for the webhook route so `rubric.txt`
+  ships in the deployed serverless function. File: `next.config.ts`.
+- Added `scripts/replay.ts` (`npm run replay`) to post the sample payload to
+  the local webhook.
+- Tested without live credentials: missing/wrong secret -> 401; malformed
+  JSON -> 400; payload without `call_id` -> 400; a valid payload with the
+  correct secret reaches the database insert and fails only on
+  `ECONNREFUSED` to the placeholder DB URL, confirming the whole pipeline up
+  to that point. `npm run build` is clean. Not yet run against a real Neon
+  database or Gemini — no credentials in this session.
+
 ## 2026-10-07 — chore: commit Next.js's auto-generated AGENTS.md
 - `next dev` regenerates `AGENTS.md` (Next 16's built-in agent-rules file,
   flagging breaking changes vs. training data) every run; committing it per
