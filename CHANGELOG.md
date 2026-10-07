@@ -1,0 +1,36 @@
+# Changelog
+
+One entry per commit, newest first: date, what changed, files, how tested.
+
+## 2026-10-07 — phase-1: scaffold, Neon/Drizzle data layer, Auth.js login
+- Scaffolded Next.js 16 (App Router, TypeScript, Turbopack) + Tailwind v4 +
+  shadcn/ui. Files: `app/`, `components/ui/`, `next.config.ts`,
+  `tsconfig.json`, `package.json`.
+- Added the Drizzle schema and migration for `calls` plus the Auth.js adapter
+  tables, targeting Neon (`DATABASE_URL` pooled, `DATABASE_URL_UNPOOLED`
+  direct). Files: `lib/db/schema.ts`, `lib/db.ts`, `drizzle.config.ts`,
+  `drizzle/0000_motionless_layla_miller.sql`.
+- Added Auth.js (NextAuth v5) email magic-link login via Resend, restricted to
+  `ALLOWED_EMAILS`, plus middleware that gates every page behind a session.
+  Files: `lib/auth.ts`, `proxy.ts`, `app/login/page.tsx`,
+  `app/api/auth/[...nextauth]/route.ts`, `app/page.tsx`.
+- Added one stub module per external service per the brief, each throwing
+  "not implemented until Phase N": `lib/vani.ts`, `lib/gemini.ts`,
+  `lib/claude.ts`, `lib/calcom.ts`, `lib/telegram.ts`, `lib/hubspot.ts`.
+- Updated `.env.example` to drop the Supabase vars and add
+  `DATABASE_URL`, `DATABASE_URL_UNPOOLED`, `RESEND_API_KEY`, `AUTH_SECRET`.
+  Updated `.gitignore` to ignore `.env*` except `.env.example`.
+- Added `.githooks/pre-commit` and turned it on with
+  `git config core.hooksPath .githooks`.
+- Recorded the Neon/Drizzle + Auth.js/Resend decision as `docs/DECISIONS.md`
+  D14, and updated `CLAUDE.md`/`BUILD_PROMPT.md`'s stack, env var and data
+  model sections to match.
+- Tested: `npm run build` (production build succeeds without live
+  credentials, using placeholder fallbacks in `lib/db.ts` and
+  `drizzle.config.ts`). Login and the database were not exercised end-to-end
+  yet — no Neon/Resend credentials in this session; see `docs/CONTEXT.md`
+  "Run / test / deploy".
+
+## 2026-10-07 — kit
+- Added the brief (`CLAUDE.md`), `rubric.txt`, `vani_agent_prompt.md`, the seed test data, and starter memory files.
+- Tested: nothing yet. This is the starting point.

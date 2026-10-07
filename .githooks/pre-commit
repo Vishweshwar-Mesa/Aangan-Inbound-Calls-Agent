@@ -1,0 +1,33 @@
+#!/usr/bin/env bash
+# Blocks a commit that touches code/config/prompts without updating project
+# memory. See CLAUDE.md, "Project memory". Bypass with `git commit --no-verify`
+# only when explicitly told to.
+set -e
+
+staged=$(git diff --cached --name-only)
+
+touches_code=false
+for pattern in '^app/' '^lib/' '^components/' '^scripts/' '^drizzle/' '^rubric\.txt$' '^vani_agent_prompt\.md$'; do
+  if echo "$staged" | grep -qE "$pattern"; then
+    touches_code=true
+    break
+  fi
+done
+
+if [ "$touches_code" = true ]; then
+  missing=""
+  echo "$staged" | grep -qx 'docs/CONTEXT.md' || missing="$missing\n  - docs/CONTEXT.md"
+  echo "$staged" | grep -qx 'CHANGELOG.md' || missing="$missing\n  - CHANGELOG.md"
+
+  if [ -n "$missing" ]; then
+    echo "pre-commit: this commit changes app/, lib/, components/, scripts/, drizzle/,"
+    echo "rubric.txt or vani_agent_prompt.md but is missing an update to:"
+    echo -e "$missing"
+    echo ""
+    echo "Update project memory before committing (see CLAUDE.md), or rerun with"
+    echo "--no-verify if you mean to skip it."
+    exit 1
+  fi
+fi
+
+exit 0

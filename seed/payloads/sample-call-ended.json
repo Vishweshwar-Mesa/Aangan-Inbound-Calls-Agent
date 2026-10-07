@@ -1,0 +1,27 @@
+{
+  "_ASSUME": "Placeholder shape until a real Vani Labs call-ended payload is available. Only normalizeVaniPayload() should depend on this.",
+  "event": "call.ended",
+  "call_id": "demo-T12-0001",
+  "agent_id": "[VANI_AGENT_ID]",
+  "from": "[CALLER NUMBER]",
+  "to": "[VANI_PHONE_NUMBER]",
+  "started_at": "2026-09-15T10:05:00+05:30",
+  "duration_seconds": 450,
+  "end_reason": "completed",
+  "recording_url": "https://[VANI-RECORDING-URL]/demo-T12.mp3",
+  "transcript": "T12 · Phone · 15 September · 10:05am · 7 min 30 sec\nFront Desk: Good morning, Aangan Studio.\nCaller: I’m calling about a villa project in Kalyani Nagar. My name is Anand Sharma. The\nproperty is about 5,500 sq ft — ground plus two floors. Full end-to-end design.\nFront Desk: That’s a significant project. Is this a new property or an existing home?\nCaller: New construction. Possession was last month. Completely empty.\nFront Desk: And your timeline?\nCaller: March next year to move in. No rush.\nFront Desk: Good time to start. Would you like our principal designer to come to site for\nthe first consultation?\nCaller: Yes — this week or next if possible.\nFront Desk: Let me check the calendar and revert by end of day.\n",
+  "extracted": {
+    "route": "QUALIFIED",
+    "caller_name": "Anand Sharma",
+    "email": "[CALLER EMAIL]",
+    "consult_type": "site visit",
+    "preferred_times": [
+      "this week, morning",
+      "next Monday 11am"
+    ]
+  },
+  "cost": {
+    "amount": null,
+    "currency": "INR"
+  }
+}

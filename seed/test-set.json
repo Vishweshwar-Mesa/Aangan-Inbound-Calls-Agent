@@ -1,0 +1,384 @@
+{
+  "source": "Aangan_Sep_2026_Enquiries.pdf, Section 1 (phone)",
+  "rules": "rubric.txt v1",
+  "pass_bar": "all 19 answerable calls routed as expected; zero false negatives (expected QUALIFIED scored NOT_A_FIT); zero price_mentioned",
+  "calls": [
+    {
+      "id": "T01",
+      "transcript": "transcripts/T01.txt",
+      "expected_route": "QUALIFIED",
+      "expected_criteria": {
+        "c1": "pass",
+        "c2": "pass",
+        "c3": "pass",
+        "c4": "pass",
+        "c5": "pass"
+      },
+      "expected_flags": [
+        "REFERRAL"
+      ],
+      "expected_fields": {
+        "locality": "Kothrud",
+        "property_type": "3BHK apartment",
+        "carpet_area_sqft": 1400,
+        "completion_needed_by": "March"
+      },
+      "price_mentioned": false
+    },
+    {
+      "id": "T02",
+      "transcript": "transcripts/T02.txt",
+      "expected_route": "QUALIFIED",
+      "expected_criteria": {
+        "c1": "pass",
+        "c2": "pass",
+        "c3": "pass",
+        "c4": "pass",
+        "c5": "pass"
+      },
+      "expected_flags": [
+        "PRICE-ASKED"
+      ],
+      "expected_fields": {
+        "locality": "Wakad",
+        "property_type": "2BHK apartment",
+        "carpet_area_sqft": 950
+      },
+      "price_mentioned": false
+    },
+    {
+      "id": "T03",
+      "transcript": "transcripts/T03.txt",
+      "expected_route": "NOT_A_FIT",
+      "expected_criteria": {
+        "c1": "pass",
+        "c2": "fail",
+        "c3": "pass",
+        "c4": "pass",
+        "c5": "pass"
+      },
+      "expected_flags": [],
+      "expected_fields": {
+        "locality": "Nashik"
+      },
+      "price_mentioned": false
+    },
+    {
+      "id": "T04",
+      "transcript": "transcripts/T04.txt",
+      "expected_route": "NOT_A_FIT",
+      "expected_criteria": {
+        "c1": "fail",
+        "c2": "pass",
+        "c3": "pass",
+        "c4": "pass",
+        "c5": "pass"
+      },
+      "expected_flags": [],
+      "expected_fields": {},
+      "price_mentioned": false
+    },
+    {
+      "id": "T05",
+      "transcript": "transcripts/T05.txt",
+      "expected_route": "QUALIFIED",
+      "expected_criteria": {
+        "c1": "pass",
+        "c2": "pass",
+        "c3": "pass",
+        "c4": "pass",
+        "c5": "pass"
+      },
+      "expected_flags": [
+        "REFERRAL",
+        "LARGE"
+      ],
+      "expected_fields": {
+        "locality": "Koregaon Park",
+        "property_type": "4BHK apartment",
+        "carpet_area_sqft": 2400,
+        "consult_type": "site visit"
+      },
+      "price_mentioned": false
+    },
+    {
+      "id": "T06",
+      "transcript": "transcripts/T06.txt",
+      "expected_route": "QUALIFIED",
+      "expected_criteria": {
+        "c1": "pass",
+        "c2": "pass",
+        "c3": "pass",
+        "c4": "pass",
+        "c5": "pass"
+      },
+      "expected_flags": [],
+      "expected_fields": {
+        "locality": "Baner",
+        "property_type": "office",
+        "carpet_area_sqft": 800
+      },
+      "price_mentioned": false
+    },
+    {
+      "id": "T07",
+      "transcript": "transcripts/T07.txt",
+      "expected_route": "NOT_A_FIT",
+      "expected_criteria": {
+        "c1": "pass",
+        "c2": "pass",
+        "c3": "fail",
+        "c4": "pass",
+        "c5": "pass"
+      },
+      "expected_flags": [],
+      "expected_fields": {
+        "note": "offer a later (November) start before closing"
+      },
+      "price_mentioned": false
+    },
+    {
+      "id": "T08",
+      "transcript": "transcripts/T08.txt",
+      "expected_route": "MISSED",
+      "expected_criteria": null,
+      "expected_flags": [],
+      "expected_fields": {
+        "locality": "Nanded City"
+      },
+      "price_mentioned": false
+    },
+    {
+      "id": "T09",
+      "transcript": "transcripts/T09.txt",
+      "expected_route": "ESCALATE",
+      "expected_criteria": null,
+      "expected_flags": [],
+      "expected_fields": {
+        "locality": "Viman Nagar"
+      },
+      "price_mentioned": false,
+      "desk_note": "Existing project complaint. Escalated to studio head immediately."
+    },
+    {
+      "id": "T10",
+      "transcript": "transcripts/T10.txt",
+      "expected_route": "NOT_A_FIT",
+      "expected_criteria": {
+        "c1": "pass",
+        "c2": "pass",
+        "c3": "pass",
+        "c4": "fail",
+        "c5": "pass"
+      },
+      "expected_flags": [
+        "BUDGET"
+      ],
+      "expected_fields": {
+        "locality": "Kharadi",
+        "carpet_area_sqft": 550,
+        "budget_volunteered": "1–1.5 lakh"
+      },
+      "price_mentioned": false
+    },
+    {
+      "id": "T11",
+      "transcript": "transcripts/T11.txt",
+      "expected_route": "QUALIFIED",
+      "expected_criteria": {
+        "c1": "pass",
+        "c2": "pass",
+        "c3": "pass",
+        "c4": "pass",
+        "c5": "pass"
+      },
+      "expected_flags": [
+        "RENTED"
+      ],
+      "expected_fields": {
+        "locality": "Baner",
+        "property_type": "2BHK apartment (rented)"
+      },
+      "price_mentioned": false
+    },
+    {
+      "id": "T12",
+      "transcript": "transcripts/T12.txt",
+      "expected_route": "QUALIFIED",
+      "expected_criteria": {
+        "c1": "pass",
+        "c2": "pass",
+        "c3": "pass",
+        "c4": "pass",
+        "c5": "pass"
+      },
+      "expected_flags": [
+        "LARGE"
+      ],
+      "expected_fields": {
+        "locality": "Kalyani Nagar",
+        "property_type": "villa",
+        "carpet_area_sqft": 5500,
+        "consult_type": "site visit"
+      },
+      "price_mentioned": false
+    },
+    {
+      "id": "T13",
+      "transcript": "transcripts/T13.txt",
+      "expected_route": "QUALIFIED",
+      "expected_criteria": {
+        "c1": "pass",
+        "c2": "pass",
+        "c3": "pass",
+        "c4": "pass",
+        "c5": "pass"
+      },
+      "expected_flags": [
+        "PRICE-ASKED"
+      ],
+      "expected_fields": {
+        "locality": "Aundh",
+        "property_type": "3BHK apartment",
+        "carpet_area_sqft": 1100
+      },
+      "price_mentioned": false
+    },
+    {
+      "id": "T14",
+      "transcript": "transcripts/T14.txt",
+      "expected_route": "QUALIFIED",
+      "expected_criteria": {
+        "c1": "pass",
+        "c2": "pass",
+        "c3": "pass",
+        "c4": "pass",
+        "c5": "unclear"
+      },
+      "expected_flags": [
+        "DECISION"
+      ],
+      "expected_fields": {
+        "locality": "Hadapsar",
+        "property_type": "3BHK apartment"
+      },
+      "price_mentioned": false,
+      "desk_note": "Caller is son. Owners are parents; both will attend consultation. Decision with parents."
+    },
+    {
+      "id": "T15",
+      "transcript": "transcripts/T15.txt",
+      "expected_route": "QUALIFIED",
+      "expected_criteria": {
+        "c1": "pass",
+        "c2": "pass",
+        "c3": "pass",
+        "c4": "pass",
+        "c5": "pass"
+      },
+      "expected_flags": [],
+      "expected_fields": {
+        "locality": "Undri",
+        "property_type": "2BHK apartment",
+        "carpet_area_sqft": 875
+      },
+      "price_mentioned": false
+    },
+    {
+      "id": "T16",
+      "transcript": "transcripts/T16.txt",
+      "expected_route": "QUALIFIED",
+      "expected_criteria": {
+        "c1": "pass",
+        "c2": "pass",
+        "c3": "pass",
+        "c4": "pass",
+        "c5": "pass"
+      },
+      "expected_flags": [
+        "REPEAT"
+      ],
+      "expected_fields": {
+        "locality": "Viman Nagar",
+        "property_type": "3BHK apartment"
+      },
+      "price_mentioned": false,
+      "desk_note": "Enquiry originally received Monday — no follow-up. Re-logged Friday. Caller frustrated."
+    },
+    {
+      "id": "T17",
+      "transcript": "transcripts/T17.txt",
+      "expected_route": "QUALIFIED",
+      "expected_criteria": {
+        "c1": "pass",
+        "c2": "pass",
+        "c3": "pass",
+        "c4": "pass",
+        "c5": "pass"
+      },
+      "expected_flags": [],
+      "expected_fields": {
+        "locality": "Pimple Saudagar",
+        "property_type": "3BHK apartment",
+        "carpet_area_sqft": 1050
+      },
+      "price_mentioned": false
+    },
+    {
+      "id": "T18",
+      "transcript": "transcripts/T18.txt",
+      "expected_route": "NOT_A_FIT",
+      "expected_criteria": {
+        "c1": "fail",
+        "c2": "pass",
+        "c3": "pass",
+        "c4": "pass",
+        "c5": "pass"
+      },
+      "expected_flags": [],
+      "expected_fields": {
+        "property_type": "office",
+        "carpet_area_sqft": 180,
+        "note": "under-500 sq ft rule not in services.md"
+      },
+      "price_mentioned": false
+    },
+    {
+      "id": "T19",
+      "transcript": "transcripts/T19.txt",
+      "expected_route": "NOT_A_FIT",
+      "expected_criteria": {
+        "c1": "fail",
+        "c2": "pass",
+        "c3": "pass",
+        "c4": "pass",
+        "c5": "pass"
+      },
+      "expected_flags": [],
+      "expected_fields": {
+        "locality": "Koregaon Park",
+        "property_type": "restaurant"
+      },
+      "price_mentioned": false
+    },
+    {
+      "id": "T20",
+      "transcript": "transcripts/T20.txt",
+      "expected_route": "QUALIFIED",
+      "expected_criteria": {
+        "c1": "pass",
+        "c2": "pass",
+        "c3": "pass",
+        "c4": "pass",
+        "c5": "pass"
+      },
+      "expected_flags": [],
+      "expected_fields": {
+        "locality": "Magarpatta",
+        "property_type": "2BHK apartment",
+        "carpet_area_sqft": 900
+      },
+      "price_mentioned": false
+    }
+  ]
+}
