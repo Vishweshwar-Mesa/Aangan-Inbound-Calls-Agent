@@ -2,6 +2,13 @@
 
 One entry per commit, newest first: date, what changed, files, how tested.
 
+## 2026-10-07 — chore: commit Next.js's auto-generated AGENTS.md
+- `next dev` regenerates `AGENTS.md` (Next 16's built-in agent-rules file,
+  flagging breaking changes vs. training data) every run; committing it per
+  Next's own guidance keeps the working tree clean between sessions.
+- Tested: ran `npm run dev`, confirmed `/` redirects (307) to `/login` and
+  `/login` renders (200) via curl, without `.env.local` set.
+
 ## 2026-10-07 — phase-1: scaffold, Neon/Drizzle data layer, Auth.js login
 - Scaffolded Next.js 16 (App Router, TypeScript, Turbopack) + Tailwind v4 +
   shadcn/ui. Files: `app/`, `components/ui/`, `next.config.ts`,
