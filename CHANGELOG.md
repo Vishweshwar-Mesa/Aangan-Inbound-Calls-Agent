@@ -2,6 +2,21 @@
 
 One entry per commit, newest first: date, what changed, files, how tested.
 
+## 2026-10-09 — fix: wrong HubSpot deal→contact association type id
+- `lib/hubspot.ts`: `DEAL_TO_CONTACT_ASSOCIATION_TYPE_ID` was `5`, taken
+  from a docs lookup during Phase 3 that turned out wrong — the real
+  HubSpot API rejected it with `INVALID_FROM_OBJECT` on the first live
+  deal creation. Corrected to `3`, confirmed directly against
+  `GET /crm/v4/associations/deals/contacts/labels`. See DECISIONS D18.
+- Also created the `ai_call_cost_inr` deal property and the "Consultation
+  booked" pipeline stage via the HubSpot API directly (not the UI), using
+  the same service-key credentials.
+- Tested: `npm run replay` against the real HubSpot account — contact
+  create, deal create, stage, and custom property all succeeded
+  (`hubspot_contact_id`/`hubspot_deal_id` populated). Only
+  `ANTHROPIC_API_KEY` is still missing among the four Phase 3 integrations.
+  `npm run build` clean.
+
 ## 2026-10-09 — docs: Telegram verified working end-to-end
 - No code changes — `TELEGRAM_BOT_TOKEN`, `TELEGRAM_DESIGNER_CHAT_ID`,
   `TELEGRAM_ESCALATION_CHAT_ID` set (both chat IDs the same for now); the

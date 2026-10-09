@@ -160,3 +160,21 @@ can't drift out of sync with it).
 **To close:** set `ALLOWED_EMAILS` to the real list of who should have
 access — the warning disappears and normal enforcement resumes
 immediately, no code change needed.
+
+### 2026-10-09 · D18 · HubSpot deal→contact association type is 3, not 5
+**Decision:** `lib/hubspot.ts`'s `DEAL_TO_CONTACT_ASSOCIATION_TYPE_ID` is
+`3`. The Phase 3 build used `5`, taken from a docs lookup that turned out
+wrong — HubSpot rejected it with `INVALID_FROM_OBJECT` on the first real
+deal creation. Confirmed live against this portal via
+`GET /crm/v4/associations/deals/contacts/labels`
+(`fromObjectTypeId: "0-3"` deals -> `toObjectTypeId: "0-1"` contacts,
+`typeId: 3`).
+**Why:** The HubSpot account's own API is the ground truth here, not a
+secondhand docs summary — worth calling that out since it's exactly the
+kind of thing CLAUDE.md's "don't guess API shapes" rule is for, and the
+first attempt still got it wrong despite trying to check docs first.
+**Also done via API, no manual UI steps needed:** created the
+`ai_call_cost_inr` Number deal property (`POST /crm/v3/properties/deals`)
+and the "Consultation booked" stage on the default pipeline
+(`POST /crm/v3/pipelines/deals/default/stages`, id `4416526020`) directly
+with the service key's write scopes, once it was clear the key could do it.

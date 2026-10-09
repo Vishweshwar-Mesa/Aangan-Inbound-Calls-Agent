@@ -15,10 +15,11 @@ const HUBSPOT_BASE = "https://api.hubapi.com";
 // Management > Properties > Deal properties > Create property > Number),
 // internal name "ai_call_cost_inr". See docs/CONTEXT.md for the exact steps.
 const COST_PROPERTY = "ai_call_cost_inr";
-// ASSUME: 5 is HubSpot's stable built-in "deal to contact" association type
-// id (HUBSPOT_DEFINED). Unchanged for years, but worth a spot-check against
-// GET /crm/v4/associations/deals/contacts/labels if deals come back unlinked.
-const DEAL_TO_CONTACT_ASSOCIATION_TYPE_ID = 5;
+// Confirmed live against this portal via
+// GET /crm/v4/associations/deals/contacts/labels (fromObjectTypeId 0-3
+// "deals" -> toObjectTypeId 0-1 "contacts"). Earlier docs had guessed 5;
+// that's wrong — HubSpot rejected it with INVALID_FROM_OBJECT.
+const DEAL_TO_CONTACT_ASSOCIATION_TYPE_ID = 3;
 
 async function hubspotFetch(path: string, init: RequestInit = {}): Promise<any> {
   const res = await fetch(`${HUBSPOT_BASE}${path}`, {
