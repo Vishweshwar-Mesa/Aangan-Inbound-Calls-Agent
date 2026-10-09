@@ -1,195 +1,107 @@
 # Context — current state
 
-Rewritten in place after every change. Keep it under 150 lines. Last updated:
-2026-10-09, deployed to production; **all four Phase 3 integrations
-(Cal.com, Gemini brief, Telegram, HubSpot) confirmed working end-to-end
-against real accounts**; login running in test mode.
+Rewritten in place after every change. Keep it under 150 lines. Last
+updated: 2026-10-09, end of Phase 4.
 
 ## Where we are
 
-This is an internal capability-testing build, not a live business — no real
-customer data. Noted here so "test mode" / open-access items below are read
-as config state, not incidents.
+This is an internal capability-testing build, not a live business — no
+real customer data. Noted here so "test mode" / open-access items below
+are read as config state, not incidents.
 
+- **Phases 1-4 are done.** Scaffold, auth, the call-ended webhook, all four
+  post-call integrations, and the six-page dashboard — all built and
+  verified against real accounts (not just type-checked).
+- **Deployed:** https://aangan-build-kit.vercel.app (Vercel project
+  `vishu-mesa/aangan-build-kit`). GitHub repo (private):
+  `Vishweshwar-Mesa/Aangan-Inbound-Calls-Agent`. **GitHub→Vercel auto-deploy
+  is connected** — every `git push` to `main` deploys automatically. Don't
+  run manual `vercel --prod`/`vercel deploy` for this project; the user
+  requires all deploys to go through Git for every project.
 - **Login is in test mode:** `ALLOWED_EMAILS` is empty, so any email can
-  sign into the live dashboard at https://aangan-build-kit.vercel.app. The
-  login page shows a visible warning. Set `ALLOWED_EMAILS` (locally and on
-  Vercel) when real access control is wanted — see DECISIONS D17.
-
-- **Phase:** 3 (post-call actions) — done and verified live, including
-  against real third-party accounts where credentials exist so far.
-  **Deployed**: https://aangan-build-kit.vercel.app (Vercel project
-  `vishu-mesa/aangan-build-kit`), code pushed to the private GitHub repo
-  `Vishweshwar-Mesa/Aangan-Inbound-Calls-Agent`. Vercel's default SSO
-  deployment protection was disabled (it would have blocked Vani/Telegram/
-  cron-job.org, which are plain HTTP callers with no Vercel login).
-- **Verified via `npm run replay` against the real Neon database:**
-  - Webhook upsert, Gemini re-score, and `final_route` decision logic are
-    all correct (routed the sample T12 call `QUALIFIED` with the `LARGE`
-    flag — matches rubric.txt's expected answer exactly).
-  - **Cal.com booking confirmed working end-to-end** against a real Cal.com
-    account: fetched real slots, matched/fell back correctly, created a
-    real booking (`calcom_booking_id` populated, `booked_at` set). Two test
-    bookings were created on the real calendar during testing (Oct 12) —
-    safe to delete manually from Cal.com.
-  - **Telegram confirmed working end-to-end** against a real bot: the
-    designer brief sent with a "Got it" button, the webhook (registered at
-    `https://aangan-build-kit.vercel.app/api/telegram`) received the tap,
-    and `telegram_ack_at` was set correctly.
-  - **HubSpot confirmed working end-to-end** against a real account: found
-    the hardcoded association type id (5) was wrong for this portal —
-    corrected to 3 by querying the API directly (DECISIONS D18) — then
-    contact create, deal create, "Consultation booked" stage, and the
-    `ai_call_cost_inr` property all worked (`hubspot_contact_id`/
-    `hubspot_deal_id` populated).
-  - **Designer brief now uses Gemini, not Anthropic's Claude** (DECISIONS
-    D19) — avoids a second LLM provider/billing account for one short
-    brief. `@anthropic-ai/sdk` uninstalled; `ANTHROPIC_API_KEY`/
-    `ANTHROPIC_MODEL` removed from `.env.example`. Confirmed producing a
-    correct, well-formed ≤120-word brief ending in the required
-    "Internal — never share:" line.
-  - **A full `npm run replay` with all four integrations live produced zero
-    `step_errors`** — booking, brief, Telegram send, and HubSpot contact+deal
-    all succeeded in one call. Phase 3 is functionally complete.
-- **Next step:** Phase 4, the dashboard. All four Phase 3 integrations are
-  live — nothing left blocking it.
-- GitHub repo is **private** (was public when created — changed this
-  session, since it holds real call transcripts and internal pricing data).
-  GitHub→Vercel auto-deploy-on-push is **not yet connected** (needs a
-  one-time authorization in the Vercel dashboard, Settings → Git) —
-  deploys are manual (`npx vercel --prod`) until then.
+  sign in. The login page shows a visible warning. Set `ALLOWED_EMAILS`
+  (locally and on Vercel) for real access control — see DECISIONS D17.
+- **Next step:** Phase 5 (`scripts/eval.ts`, `scripts/seed-demo.ts`), then
+  Phase 6 (Vani voice agent setup — needs a Vani Labs account).
 
 ## What exists in the repo
 
-Phases 1–2 (scaffold, auth, the call-ended webhook) — unchanged, see git
-history.
-
-Phase 3 additions:
-- `lib/pricing.ts` — the internal per-sq-ft bands from pricing.md, residential
-  and commercial, plus `estimateRanges()`. Never exposed to a caller surface.
-- `lib/claude.ts` — `writeDesignerBrief()`: calls Anthropic with the call's
-  structured fields + computed pricing ranges, asks for ≤120 words ending in
-  an `Internal — never share:` line.
-- `lib/calcom.ts` — `bookConsultation()`: fetches Cal.com v2 slots for the
-  next 5 working days, parses the caller's natural-language preferred times
-  with `chrono-node`, matches within a 90-minute tolerance or falls back to
-  the nearest slot after the earliest preference, then books it.
-- `lib/telegram.ts` — `sendDesignerBrief()` (HTML, inline "Got it" button,
-  skips sending 7pm–9am IST — the call's `telegram_sent_at` staying null
-  **is** the "queued" state), `sendEscalation()`, `sendReminder()`.
-- `lib/hubspot.ts` — `upsertContactAndDeal()`: finds a contact by email then
-  phone, creates one if neither matches, looks up the "Consultation booked"
-  deal stage by label (cached after first lookup), creates the deal with
-  `ai_call_cost_inr` and a contact association.
-- `app/api/telegram/route.ts` — verifies
-  `X-Telegram-Bot-Api-Secret-Token`; on an `ack:<callId>` callback, sets
-  `telegram_ack_at`, answers the callback, edits the message to
-  "✅ Acknowledged".
-- `app/api/cron/route.ts` — verifies `Authorization: Bearer <CRON_SECRET>`.
-  Sends any queued (after-hours) briefs if now within sending hours; reminds
-  the designer + escalation chat for any `QUALIFIED` call unacknowledged 30+
-  minutes after `telegram_sent_at` (guarded by the new `reminder_sent_at` so
-  it only fires once — see DECISIONS D15).
-- `lib/db/schema.ts` — added `reminder_sent_at` (D15); migration
-  `drizzle/0001_tiresome_cardiac.sql`.
-- **Bug found and fixed:** `lib/db.ts`, `drizzle.config.ts`, `lib/claude.ts`,
-  `lib/gemini.ts` used `??` for their env-var fallbacks. Once `.env.local`
-  existed with those vars present-but-empty (not unset), `??` no longer fell
-  back (it only catches `null`/`undefined`, not `""`), so the placeholder
-  DB connection string silently became an empty string. All four now use
-  `||`. Caught by testing `/api/cron` after `.env.local` was created.
-- **Bug found and fixed:** `drizzle.config.ts` and `scripts/replay.ts` used
-  `import "dotenv/config"`, which only loads `.env` by default — not
-  `.env.local`. Both ran with every var undefined, silently falling back to
-  the placeholder `localhost:5432` connection, which is what made
-  `npm run db:migrate` hang indefinitely (drizzle-kit was trying to reach a
-  Postgres that doesn't exist, not a real connectivity problem). Both now
-  call `config({ path: ".env.local" })` explicitly.
-- **Stale model name, twice:** `GEMINI_MODEL` defaulted to `gemini-2.0-flash`,
-  which the API rejected with a 404 pointing to `gemini-3.8-flash`. Rather
-  than pin that (and hit this again later), switched the default — and
-  `.env.local`/Vercel's value — to `gemini-flash-latest`, an alias that
-  always points to the current flash model. Verified both the re-score and
-  the Gemini-written brief work correctly against it.
-
-## Built and working
-
-- Everything compiles (`npm run build` clean) and is deployed to Vercel
-  production. Migrations applied to the real Neon database
-  (`npm run db:migrate`, using the `pg` driver — drizzle-kit auto-selects it
-  over `@neondatabase/serverless` once `pg` is installed, which also sidesteps
-  the websocket-based migrate path).
-- `npm run replay` against the real database and Gemini confirmed the whole
-  webhook flow end-to-end: upsert, re-score, route decision, and
-  `step_errors` isolation per post-call step (see "Where we are" above for
-  the result). The test row was deleted afterward — it was replay/demo data,
-  not a real call.
-- `/api/telegram` and `/api/cron` both 401 without their secret; confirmed
-  on the live deployment too.
-
-## In progress
-
-- None.
+- **Phase 1-2:** Next.js scaffold, Drizzle schema/migrations against Neon,
+  Auth.js login, `proxy.ts` page gate, `POST /api/vani/call-ended`.
+- **Phase 3:** `lib/calcom.ts` (booking), `lib/claude.ts` (designer brief —
+  uses Gemini, not Anthropic's Claude; see D19), `lib/telegram.ts` (send +
+  "Got it" ack + reminders), `lib/hubspot.ts` (contact/deal + portal/stage
+  lookups), orchestrated by `lib/post-call.ts`. `app/api/telegram/route.ts`
+  and `app/api/cron/route.ts`. All four confirmed working end-to-end
+  against real accounts via `npm run replay`, zero `step_errors`.
+- **Phase 4:** six pages under `app/(dashboard)/` (shared `layout.tsx` with
+  `components/nav.tsx`): Overview (`page.tsx`), Calls (`calls/`), Call
+  detail (`calls/[id]/`), Review queue (`review/`, with server actions
+  `confirmDecline`/`sendToDesigner` in `review/actions.ts`), Analytics
+  (`analytics/`, with the full scorecard), Settings (`settings/`, env-var
+  status + per-service "Test connection" + copyable webhook URLs). Data
+  layer: `lib/queries.ts`, `lib/analytics.ts`. "Midnight Bento" design
+  tokens live in `app/globals.css` (`:root`/`.dark` are intentionally
+  identical — one fixed dark theme, no toggle); Manrope font; Recharts for
+  the hour/weekday/sparkline charts.
+- **Verified live** (session created directly in the DB for testing, then
+  deleted): all six pages render correctly with real data; `confirmDecline`
+  and `sendToDesigner` both tested via their actual rendered forms (not just
+  code review) — `sendToDesigner` correctly sets `final_route='QUALIFIED'`
+  (D20), runs the brief/Telegram/HubSpot steps, and skips Cal.com.
 
 ## Env vars
 
 Set, locally and on Vercel: `DATABASE_URL`, `DATABASE_URL_UNPOOLED`,
-`GEMINI_API_KEY`, `GEMINI_MODEL`, `RESEND_API_KEY`, `AUTH_SECRET`,
-`VANI_WEBHOOK_SECRET`, `TELEGRAM_WEBHOOK_SECRET`, `CRON_SECRET`, `APP_URL`
-(production value is the real Vercel URL; `.env.local` keeps `localhost:3000`
-for local dev), `CALCOM_API_KEY`, `CALCOM_EVENT_TYPE_ID` (Cal.com's default
-"30 min meeting", id `7409849` — no dedicated "Design Consultation" event
-type exists yet), `TELEGRAM_BOT_TOKEN` (@Aangan_Inbound_BOT),
-`TELEGRAM_DESIGNER_CHAT_ID`, `TELEGRAM_ESCALATION_CHAT_ID` (both the same
-chat ID for now — one person's private chat with the bot; split later if a
-real designer/front-desk distinction is wanted). Telegram's webhook is
-registered against the production URL. `HUBSPOT_PRIVATE_APP_TOKEN` — note
-this account issues HubSpot's newer "service key" (prefix `pat-na2-...`),
-not the classic "private app" token; same Bearer auth, works as a drop-in.
-The "Consultation booked" stage and `ai_call_cost_inr` property both exist
-in HubSpot (created via the API directly, not the UI). `GEMINI_MODEL` is
-`gemini-flash-latest` (an alias, not a pinned version — used for both the
-re-score and the designer brief; no `ANTHROPIC_*` vars needed anymore,
-see DECISIONS D19).
+`GEMINI_API_KEY`, `GEMINI_MODEL` (`gemini-flash-latest` — an alias, not a
+pinned version), `RESEND_API_KEY`, `AUTH_SECRET`, `VANI_WEBHOOK_SECRET`,
+`TELEGRAM_WEBHOOK_SECRET`, `CRON_SECRET`, `APP_URL`, `CALCOM_API_KEY`,
+`CALCOM_EVENT_TYPE_ID` (Cal.com's default "30 min meeting", id `7409849`),
+`TELEGRAM_BOT_TOKEN` (@Aangan_Inbound_BOT), `TELEGRAM_DESIGNER_CHAT_ID`,
+`TELEGRAM_ESCALATION_CHAT_ID` (same chat ID for both, for now),
+`HUBSPOT_PRIVATE_APP_TOKEN` (this account's "service key", not a classic
+private-app token — same Bearer auth either way).
 
-Still placeholder (everywhere): `ALLOWED_EMAILS` (empty = test mode, see
-above), `VANI_API_KEY`, `VANI_AGENT_ID`, `VANI_PHONE_NUMBER`,
-`DESIGNER_NAME`.
+Still placeholder: `ALLOWED_EMAILS` (empty = test mode), `VANI_API_KEY`,
+`VANI_AGENT_ID`, `VANI_PHONE_NUMBER`, `DESIGNER_NAME`.
 
 ## Open assumptions
 
 - Cal.com v2 header `cal-api-version`: `2024-09-04` for `/slots`,
-  `2026-02-25` for `/bookings`. Taken from Cal.com's docs at build time —
-  re-verify before go-live, since Cal.com bumps these periodically.
+  `2026-02-25` for `/bookings` — re-verify if these ever start 400ing.
 - "Front desk chat" in the cron reminder reuses `TELEGRAM_ESCALATION_CHAT_ID`
-  — no separate env var exists (DECISIONS D16).
-- Preferred-time matching uses `chrono-node` on natural-language strings
-  ("this week, morning") with a 90-minute tolerance window; not exact.
-- Prior open items unchanged: Vani payload shape (D-pending), Vani webhook
-  auth scheme, missed-call handling, three Nikhil confirmations (D13),
-  consultation-to-won rate.
+  (DECISIONS D16); HubSpot's deal-to-contact association type is `3`,
+  confirmed live (D18).
+- Preferred-time matching (`chrono-node`) uses a 90-minute tolerance, not
+  exact.
+- Vani's real payload shape, and how it sends the webhook secret, are
+  unknown — `lib/vani.ts` matches only the kit's placeholder.
+- Three Nikhil confirmations are pending (DECISIONS D13): the timeline
+  cutoff, the sub-500-sqft office rule, the budget floors.
+- Consultation-to-won rate is unknown; `getWonRates()` in `lib/analytics.ts`
+  will show "not measured yet" until enough deals close in HubSpot.
 
 ## Known bugs
 
-- None currently open (see "Bug found and fixed" above for one caught and
-  resolved this session).
+- None currently open. `lib/calcom.ts` now stores Cal.com's `uid` (not the
+  numeric `id`) in `calcom_booking_id`, since the dashboard's reschedule
+  link needs the uid — fixed during Phase 4 before any real data relied on
+  the old value.
 
 ## Run / test / deploy
 
-**Already done this session:** `npm install`, `npm run db:migrate` against
-the real Neon database, pushed to GitHub (private repo), deployed to Vercel
-production, Vercel's default SSO deployment protection disabled (it blocked
-plain-HTTP callers like Vani/Telegram/cron-job.org), all four Phase 3
-integrations (Cal.com, Gemini brief, Telegram, HubSpot) wired up and
-confirmed working end-to-end against real accounts in a single
-zero-`step_errors` `npm run replay` run.
-
-**Still to do:**
-1. Add to both `.env.local` and Vercel's env vars: `ALLOWED_EMAILS`.
-2. **Cron:** schedule a GET every 10 minutes from cron-job.org to
-   `$APP_URL/api/cron` with header `Authorization: Bearer <CRON_SECRET>`.
-3. **GitHub auto-deploy** isn't connected yet — Vercel dashboard, project
-   Settings > Git > Connect Git Repository, authorize the private repo.
+1. `.env.local` has every credential above except `ALLOWED_EMAILS`,
+   `VANI_*`, `DESIGNER_NAME`. Vercel's production env vars match.
+2. `npm run dev`, sign in via the test-mode login (any email), browse the
+   dashboard at `localhost:3000`.
+3. `npm run replay` to push a sample call through the whole pipeline; check
+   `step_errors` on the resulting row for anything failing.
+4. `npm run build` before committing.
+5. `git push` — Vercel deploys automatically. Never run a manual
+   `vercel --prod`/`vercel deploy` for this project.
+6. Still to do, not blocked on more credentials: `ALLOWED_EMAILS` (your
+   call), schedule `GET $APP_URL/api/cron` every 10 minutes on
+   cron-job.org with header `Authorization: Bearer <CRON_SECRET>`.
 
 ## Pass bars
 

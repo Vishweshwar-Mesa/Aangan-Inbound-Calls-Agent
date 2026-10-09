@@ -137,7 +137,10 @@ export async function bookConsultation(input: BookingInput): Promise<BookingResu
     email: input.attendeeEmail,
   });
 
-  const bookingId = booking.id ?? booking.uid;
+  // Prefer uid over the numeric id: the dashboard's reschedule link
+  // (cal.com/reschedule/{uid}) needs it, and nothing in this app looks the
+  // booking up by numeric id.
+  const bookingId = booking.uid ?? booking.id;
   if (bookingId === undefined) {
     throw new Error("bookConsultation: Cal.com response had no booking id");
   }

@@ -96,6 +96,49 @@ async function getConsultationBookedStage(): Promise<{ pipelineId: string; stage
   );
 }
 
+let portalInfo: { portalId: number; uiDomain: string } | null = null;
+
+async function getPortalInfo(): Promise<{ portalId: number; uiDomain: string }> {
+  if (portalInfo) return portalInfo;
+  const body = await hubspotFetch(`/account-info/v3/details`);
+  portalInfo = { portalId: body.portalId, uiDomain: body.uiDomain };
+  return portalInfo;
+}
+
+export async function getDealUrl(dealId: string): Promise<string> {
+  const { portalId, uiDomain } = await getPortalInfo();
+  return `https://${uiDomain}/contacts/${portalId}/record/0-3/${dealId}`;
+}
+
+const ONE_HOUR_MS = 60 * 60 * 1000;
+let dealStageCache: { at: number; stages: Map<string, string> } | null = null;
+
+// "consultation-to-won from HubSpot deal stages, read via API and cached
+// hourly" (CLAUDE.md Phase 4 Analytics). A module-level cache is
+// best-effort on serverless (cold starts reset it) but avoids refetching
+// on every analytics page load within the same warm instance.
+export async function getDealStages(dealIds: string[]): Promise<Map<string, string>> {
+  if (dealIds.length === 0) return new Map();
+  if (dealStageCache && Date.now() - dealStageCache.at < ONE_HOUR_MS) {
+    return dealStageCache.stages;
+  }
+
+  const body = await hubspotFetch(`/crm/v3/objects/deals/batch/read`, {
+    method: "POST",
+    body: JSON.stringify({
+      inputs: dealIds.map((id) => ({ id })),
+      properties: ["dealstage"],
+    }),
+  });
+
+  const stages = new Map<string, string>();
+  for (const result of body.results ?? []) {
+    stages.set(result.id, result.properties?.dealstage ?? "");
+  }
+  dealStageCache = { at: Date.now(), stages };
+  return stages;
+}
+
 export async function upsertContactAndDeal(
   input: HubspotDealInput,
 ): Promise<HubspotDealResult> {

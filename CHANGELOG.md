@@ -2,6 +2,32 @@
 
 One entry per commit, newest first: date, what changed, files, how tested.
 
+## 2026-10-09 — phase-4: the dashboard
+- Six pages under `app/(dashboard)/`: Overview, Calls (filters + search +
+  CSV export), Call detail (`calls/[id]`, brief/fields/consultation/five
+  checks/agreement/transcript/audio/HubSpot link), Review queue (confirm
+  decline / send to designer server actions), Analytics (full scorecard,
+  hour/weekday charts, 60-day sparklines), Settings (env-var status, test
+  connection per service, copyable webhook URLs).
+- `components/nav.tsx`, `components/status-chip.tsx`,
+  `components/copy-field.tsx`, `components/charts/*` (Recharts).
+- `lib/queries.ts`, `lib/analytics.ts`, `lib/rubric-labels.ts`,
+  `lib/format.ts`. `lib/hubspot.ts`: added `getDealUrl()` and
+  `getDealStages()` (hourly-cached) for the "Open in HubSpot" link and the
+  consultation-to-won scorecard metric.
+- "Midnight Bento" design tokens in `app/globals.css` (one fixed dark
+  theme), Manrope font in `app/layout.tsx`.
+- Fixed `lib/calcom.ts`: stored Cal.com's numeric `id` instead of `uid` in
+  `calcom_booking_id` — the dashboard's reschedule link needs the uid.
+- Decision: `sendToDesigner` sets `final_route = 'QUALIFIED'` so the call
+  displays correctly everywhere else and `runPostCallActions()` takes the
+  right branch without new branching logic (DECISIONS D20).
+- Tested against real data end-to-end (session created directly in the DB
+  for testing, removed afterward): all six pages return 200 with correct
+  content; `confirmDecline` and `sendToDesigner` both exercised through
+  their actual rendered forms — correct DB state, correct skip of Cal.com
+  for `sendToDesigner`. `npm run build` clean.
+
 ## 2026-10-09 — feat: designer brief uses Gemini (not Claude); GEMINI_MODEL -> latest alias
 - `lib/claude.ts`: swapped `@anthropic-ai/sdk` for `@google/genai` — the
   brief now uses the same Gemini credentials as the re-score. Uninstalled

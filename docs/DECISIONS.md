@@ -143,6 +143,23 @@ fit rather than inventing a new env var unprompted.
 being asked. Revisit if a dedicated front-desk chat turns out to be wanted —
 trivial to add later.
 
+### 2026-10-09 · D20 · "Send to designer" sets final_route to QUALIFIED
+**Decision:** The review queue's "Send to designer" action
+(`app/(dashboard)/review/actions.ts`) sets `final_route = 'QUALIFIED'` in
+addition to `review_outcome = 'sent_to_designer'`, then runs the normal
+QUALIFIED post-call actions with `skipBooking: true`.
+**Why:** CLAUDE.md's Phase 4 spec says this action "runs the QUALIFIED
+actions, except Cal.com" but doesn't say whether `final_route` itself
+should change. Leaving it as `NOT_A_FIT`/`NEEDS_REVIEW` while running
+QUALIFIED-style actions would make the call display as declined everywhere
+else in the dashboard (Calls list, Overview's outcome bar) even though a
+human just qualified it — `runPostCallActions()` also only takes the
+QUALIFIED branch when `final_route` actually is `QUALIFIED`, so this was
+needed for the brief/Telegram/HubSpot steps to run at all without changing
+`runPostCallActions()`'s branching.
+**Rejected:** Making `runPostCallActions()` branch on `review_outcome` as
+well as `final_route` — more surface area for the same outcome.
+
 ### 2026-10-09 · D17 · Login test mode: empty `ALLOWED_EMAILS` lets any email sign in
 **Decision:** `lib/auth.ts`'s `signIn` callback allows any email when
 `ALLOWED_EMAILS` is empty, instead of CLAUDE.md's original "blocks every
