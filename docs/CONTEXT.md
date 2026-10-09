@@ -28,13 +28,19 @@ as config state, not incidents.
     flag — matches rubric.txt's expected answer exactly).
   - **Cal.com booking confirmed working end-to-end** against a real Cal.com
     account: fetched real slots, matched/fell back correctly, created a
-    real booking (`calcom_booking_id` populated, `booked_at` set).
-  - Claude/Telegram/HubSpot still fail independently into `step_errors` —
-    no credentials for those three yet. No step ever blocks another.
-- **Next step:** Phase 4, the dashboard. Still need real Telegram/HubSpot/
-  Anthropic credentials before those three
-  integrations actually work — re-run `npm run replay` after adding each
-  and check `step_errors` on the resulting row.
+    real booking (`calcom_booking_id` populated, `booked_at` set). Two test
+    bookings were created on the real calendar during testing (Oct 12) —
+    safe to delete manually from Cal.com.
+  - **Telegram confirmed working end-to-end** against a real bot: the
+    designer brief sent with a "Got it" button, the webhook (registered at
+    `https://aangan-build-kit.vercel.app/api/telegram`) received the tap,
+    and `telegram_ack_at` was set correctly.
+  - Claude/HubSpot still fail independently into `step_errors` — no
+    credentials for those two yet. No step ever blocks another.
+- **Next step:** Phase 4, the dashboard. Still need real HubSpot/Anthropic
+  credentials before those two integrations actually work — re-run
+  `npm run replay` after adding each and check `step_errors` on the
+  resulting row.
 - GitHub repo is **private** (was public when created — changed this
   session, since it holds real call transcripts and internal pricing data).
   GitHub→Vercel auto-deploy-on-push is **not yet connected** (needs a
@@ -120,13 +126,16 @@ Set, locally and on Vercel: `DATABASE_URL`, `DATABASE_URL_UNPOOLED`,
 (production value is the real Vercel URL; `.env.local` keeps `localhost:3000`
 for local dev), `CALCOM_API_KEY`, `CALCOM_EVENT_TYPE_ID` (Cal.com's default
 "30 min meeting", id `7409849` — no dedicated "Design Consultation" event
-type exists yet).
+type exists yet), `TELEGRAM_BOT_TOKEN` (@Aangan_Inbound_BOT),
+`TELEGRAM_DESIGNER_CHAT_ID`, `TELEGRAM_ESCALATION_CHAT_ID` (both the same
+chat ID for now — one person's private chat with the bot; split later if a
+real designer/front-desk distinction is wanted). Telegram's webhook is
+registered against the production URL.
 
 Still placeholder (everywhere): `ALLOWED_EMAILS` (empty = test mode, see
 above), `VANI_API_KEY`, `VANI_AGENT_ID`, `VANI_PHONE_NUMBER`,
-`TELEGRAM_BOT_TOKEN`, `TELEGRAM_DESIGNER_CHAT_ID`,
-`TELEGRAM_ESCALATION_CHAT_ID`, `HUBSPOT_PRIVATE_APP_TOKEN`,
-`ANTHROPIC_API_KEY`, `ANTHROPIC_MODEL`, `DESIGNER_NAME`.
+`HUBSPOT_PRIVATE_APP_TOKEN`, `ANTHROPIC_API_KEY`, `ANTHROPIC_MODEL`,
+`DESIGNER_NAME`.
 
 ## Open assumptions
 
@@ -158,23 +167,18 @@ above), `VANI_API_KEY`, `VANI_AGENT_ID`, `VANI_PHONE_NUMBER`,
 **Already done this session:** `npm install`, `npm run db:migrate` against
 the real Neon database, pushed to GitHub (private repo), deployed to Vercel
 production, Vercel's default SSO deployment protection disabled (it blocked
-plain-HTTP callers like Vani/Telegram/cron-job.org), Cal.com wired up and
-booking confirmed working against a real account.
+plain-HTTP callers like Vani/Telegram/cron-job.org), Cal.com and Telegram
+both wired up and confirmed working against real accounts (booking, brief
+send, "Got it" ack webhook).
 
 **Still to do:**
 1. Add to both `.env.local` and Vercel's env vars: `ALLOWED_EMAILS`,
-   `TELEGRAM_BOT_TOKEN`/`TELEGRAM_DESIGNER_CHAT_ID`/
-   `TELEGRAM_ESCALATION_CHAT_ID`, `HUBSPOT_PRIVATE_APP_TOKEN`,
-   `ANTHROPIC_API_KEY`.
+   `HUBSPOT_PRIVATE_APP_TOKEN`, `ANTHROPIC_API_KEY`.
 2. **HubSpot, once:** Settings > Data Management > Deal pipelines — add a
    stage labelled exactly "Consultation booked". Settings > Data Management
    > Properties > Deal properties > Create property — Number, internal name
    `ai_call_cost_inr`.
-3. **Telegram, once:** after setting `TELEGRAM_BOT_TOKEN` and
-   `TELEGRAM_WEBHOOK_SECRET`, point the bot at the webhook:
-   `curl -X POST https://api.telegram.org/bot$TELEGRAM_BOT_TOKEN/setWebhook -d url=$APP_URL/api/telegram -d secret_token=$TELEGRAM_WEBHOOK_SECRET`
-   (use the real production `APP_URL`).
-4. **Cron:** schedule a GET every 10 minutes from cron-job.org to
+3. **Cron:** schedule a GET every 10 minutes from cron-job.org to
    `$APP_URL/api/cron` with header `Authorization: Bearer <CRON_SECRET>`.
 5. **GitHub auto-deploy** isn't connected yet — Vercel dashboard, project
    Settings > Git > Connect Git Repository, authorize the private repo.

@@ -2,6 +2,15 @@
 
 One entry per commit, newest first: date, what changed, files, how tested.
 
+## 2026-10-09 — docs: Telegram verified working end-to-end
+- No code changes — `TELEGRAM_BOT_TOKEN`, `TELEGRAM_DESIGNER_CHAT_ID`,
+  `TELEGRAM_ESCALATION_CHAT_ID` set (both chat IDs the same for now); the
+  webhook registered via `setWebhook` against the production URL.
+- Tested against the real bot: the designer brief sent with a "Got it"
+  button, tapping it hit `/api/telegram` and correctly set
+  `telegram_ack_at`. Confirms `lib/telegram.ts`'s send/queue logic and
+  `app/api/telegram/route.ts`'s callback handling are both correct.
+
 ## 2026-10-09 — docs: Cal.com verified working end-to-end
 - No code changes — `CALCOM_API_KEY` and `CALCOM_EVENT_TYPE_ID` (Cal.com's
   default "30 min meeting", id `7409849`) set locally and on Vercel.
