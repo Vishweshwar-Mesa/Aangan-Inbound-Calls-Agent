@@ -1,7 +1,7 @@
 # Context — current state
 
 Rewritten in place after every change. Keep it under 150 lines. Last
-updated: 2026-10-09, end of Phase 4.
+updated: 2026-10-09, end of Phase 5.
 
 ## Where we are
 
@@ -9,9 +9,13 @@ This is an internal capability-testing build, not a live business — no
 real customer data. Noted here so "test mode" / open-access items below
 are read as config state, not incidents.
 
-- **Phases 1-4 are done.** Scaffold, auth, the call-ended webhook, all four
-  post-call integrations, and the six-page dashboard — all built and
-  verified against real accounts (not just type-checked).
+- **Phases 1-5 are done.** Scaffold, auth, the call-ended webhook, all four
+  post-call integrations, the six-page dashboard, and the eval/seed scripts
+  — all built and verified against real accounts (not just type-checked).
+- **Eval result: 19/19 (100%) agreement, 0 false negatives, 0 prices
+  spoken** — `npm run eval` against the real Gemini re-score, exits 0. The
+  dashboard has real demo data from `npm run seed-demo` (all 20 September
+  test calls, prefixed `demo-`).
 - **Deployed:** https://aangan-build-kit.vercel.app (Vercel project
   `vishu-mesa/aangan-build-kit`). GitHub repo (private):
   `Vishweshwar-Mesa/Aangan-Inbound-Calls-Agent`. **GitHub→Vercel auto-deploy
@@ -21,8 +25,9 @@ are read as config state, not incidents.
 - **Login is in test mode:** `ALLOWED_EMAILS` is empty, so any email can
   sign in. The login page shows a visible warning. Set `ALLOWED_EMAILS`
   (locally and on Vercel) for real access control — see DECISIONS D17.
-- **Next step:** Phase 5 (`scripts/eval.ts`, `scripts/seed-demo.ts`), then
-  Phase 6 (Vani voice agent setup — needs a Vani Labs account).
+- **Next step:** Phase 6 (Vani voice agent setup). `VANI_API_KEY` is set;
+  still need `VANI_AGENT_ID` and `VANI_PHONE_NUMBER` from the Vani
+  dashboard once an agent is created there.
 
 ## What exists in the repo
 
@@ -60,10 +65,10 @@ pinned version), `RESEND_API_KEY`, `AUTH_SECRET`, `VANI_WEBHOOK_SECRET`,
 `TELEGRAM_BOT_TOKEN` (@Aangan_Inbound_BOT), `TELEGRAM_DESIGNER_CHAT_ID`,
 `TELEGRAM_ESCALATION_CHAT_ID` (same chat ID for both, for now),
 `HUBSPOT_PRIVATE_APP_TOKEN` (this account's "service key", not a classic
-private-app token — same Bearer auth either way).
+private-app token — same Bearer auth either way), `VANI_API_KEY`.
 
-Still placeholder: `ALLOWED_EMAILS` (empty = test mode), `VANI_API_KEY`,
-`VANI_AGENT_ID`, `VANI_PHONE_NUMBER`, `DESIGNER_NAME`.
+Still placeholder: `ALLOWED_EMAILS` (empty = test mode), `VANI_AGENT_ID`,
+`VANI_PHONE_NUMBER`, `DESIGNER_NAME`.
 
 ## Open assumptions
 
@@ -87,19 +92,32 @@ Still placeholder: `ALLOWED_EMAILS` (empty = test mode), `VANI_API_KEY`,
   numeric `id`) in `calcom_booking_id`, since the dashboard's reschedule
   link needs the uid — fixed during Phase 4 before any real data relied on
   the old value.
+- **Gotcha to remember for any future script:** a script that does
+  `config({ path: ".env.local" })` (dotenv) then a *static* `import` of
+  `lib/db.ts` will read `DATABASE_URL` as empty — ESM evaluates all static
+  imports before any top-level code in the importing file, regardless of
+  source order. `scripts/seed-demo.ts` works around it with a dynamic
+  `await import("../lib/db")` inside `main()`, after `config()` has run.
+  `scripts/eval.ts`/`replay.ts` don't need this since the lib files they
+  import read env vars lazily inside function bodies, not at module load.
 
 ## Run / test / deploy
 
 1. `.env.local` has every credential above except `ALLOWED_EMAILS`,
-   `VANI_*`, `DESIGNER_NAME`. Vercel's production env vars match.
+   `VANI_AGENT_ID`, `VANI_PHONE_NUMBER`, `DESIGNER_NAME`. Vercel's
+   production env vars match.
 2. `npm run dev`, sign in via the test-mode login (any email), browse the
    dashboard at `localhost:3000`.
 3. `npm run replay` to push a sample call through the whole pipeline; check
    `step_errors` on the resulting row for anything failing.
-4. `npm run build` before committing.
-5. `git push` — Vercel deploys automatically. Never run a manual
+4. `npm run eval` to re-score all 20 test transcripts against the rubric
+   (pass bar: 19/19 agreement, 0 false negatives, 0 prices spoken — exits
+   non-zero otherwise). `npm run seed-demo` to (re-)populate the dashboard
+   with those 20 calls (`demo-*` vani_call_ids, safe to re-run).
+5. `npm run build` before committing.
+6. `git push` — Vercel deploys automatically. Never run a manual
    `vercel --prod`/`vercel deploy` for this project.
-6. Still to do, not blocked on more credentials: `ALLOWED_EMAILS` (your
+7. Still to do, not blocked on more credentials: `ALLOWED_EMAILS` (your
    call), schedule `GET $APP_URL/api/cron` every 10 minutes on
    cron-job.org with header `Authorization: Bearer <CRON_SECRET>`.
 

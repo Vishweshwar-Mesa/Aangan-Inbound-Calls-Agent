@@ -2,6 +2,35 @@
 
 One entry per commit, newest first: date, what changed, files, how tested.
 
+## 2026-10-09 — phase-5: eval and seed-demo scripts
+- `scripts/eval.ts` (`npm run eval`): re-scores all 20 test transcripts
+  with Gemini, prints expected-vs-got, agreement %, false negatives, and
+  any `price_mentioned`; exits non-zero on a false negative or a spoken
+  price. Never feeds `desk_note` (or anything else from `test-set.json`)
+  to Gemini — only each transcript file's own text.
+- `scripts/seed-demo.ts` (`npm run seed-demo`): inserts the 20 test-set
+  calls into the database (`demo-*` vani_call_ids, upserted — safe to
+  re-run) so the dashboard has real data before Vani is live. Parses each
+  transcript's header line for `started_at`/`duration_s`, best-effort
+  extracts the caller's name. Historical calls predate this app's
+  automation, so `calcom_booking_id`/`brief`/`telegram_sent_at`/
+  `hubspot_*_id` stay null even for QUALIFIED calls — no real booking/deal
+  was ever created for them. NOT_A_FIT calls are seeded with
+  `review_outcome = 'confirmed_decline'` (front desk handled these in
+  September), so they don't appear in the live review queue.
+- Fixed a real bug in `scripts/seed-demo.ts` while building it: a static
+  `import` of `lib/db.ts` is hoisted ahead of a `config({path:".env.local"})`
+  call regardless of source order (ESM evaluates all static imports
+  before any top-level code in the importing file), so `DATABASE_URL` read
+  as empty. Fixed with a dynamic `await import("../lib/db")` inside
+  `main()`. Documented in `docs/CONTEXT.md` as a gotcha for future scripts.
+- Tested: `npm run eval` against the real Gemini re-score — **19/19
+  (100%) agreement, 0 false negatives, 0 prices spoken**, exit code 0.
+  `npm run seed-demo` verified idempotent (re-run doesn't duplicate rows)
+  and spot-checked against the live dashboard (Overview, Calls, Call
+  detail, Review queue all render the seeded data correctly). `npm run
+  build` clean.
+
 ## 2026-10-09 — phase-4: the dashboard
 - Six pages under `app/(dashboard)/`: Overview, Calls (filters + search +
   CSV export), Call detail (`calls/[id]`, brief/fields/consultation/five
