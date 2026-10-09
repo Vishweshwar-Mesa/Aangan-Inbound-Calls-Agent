@@ -6,28 +6,33 @@ against the real database and Gemini; login running in test mode.
 
 ## Where we are
 
-- **⚠️ Login is in test mode right now:** `ALLOWED_EMAILS` is empty, so
-  **any email can sign into the live dashboard** at
-  https://aangan-build-kit.vercel.app — real call transcripts, phone
-  numbers and internal pricing are one magic-link away from anyone with the
-  URL. The login page shows a visible warning. Set `ALLOWED_EMAILS` (locally
-  and on Vercel) to close this — see DECISIONS D17.
+This is an internal capability-testing build, not a live business — no real
+customer data. Noted here so "test mode" / open-access items below are read
+as config state, not incidents.
 
-- **Phase:** 3 (post-call actions) — done and verified live. **Deployed**:
-  https://aangan-build-kit.vercel.app (Vercel project `vishu-mesa/aangan-build-kit`),
-  code pushed to the private GitHub repo
+- **Login is in test mode:** `ALLOWED_EMAILS` is empty, so any email can
+  sign into the live dashboard at https://aangan-build-kit.vercel.app. The
+  login page shows a visible warning. Set `ALLOWED_EMAILS` (locally and on
+  Vercel) when real access control is wanted — see DECISIONS D17.
+
+- **Phase:** 3 (post-call actions) — done and verified live, including
+  against real third-party accounts where credentials exist so far.
+  **Deployed**: https://aangan-build-kit.vercel.app (Vercel project
+  `vishu-mesa/aangan-build-kit`), code pushed to the private GitHub repo
   `Vishweshwar-Mesa/Aangan-Inbound-Calls-Agent`. Vercel's default SSO
   deployment protection was disabled (it would have blocked Vani/Telegram/
   cron-job.org, which are plain HTTP callers with no Vercel login).
-- **Verified via `npm run replay` against the real Neon database:** the
-  webhook correctly upserts, Gemini re-scores correctly (routed the sample
-  T12 call `QUALIFIED` with the `LARGE` flag — matches rubric.txt's
-  expected answer exactly), and `final_route` decision logic is correct.
-  Cal.com/Claude/Telegram/HubSpot each fail independently into
-  `step_errors` with no live credentials, exactly as designed — no step
-  blocked another, nothing crashed the request.
-- **Next step:** Phase 4, the dashboard. Still need real Cal.com/Telegram/
-  HubSpot/Anthropic credentials (and `ALLOWED_EMAILS`) before those four
+- **Verified via `npm run replay` against the real Neon database:**
+  - Webhook upsert, Gemini re-score, and `final_route` decision logic are
+    all correct (routed the sample T12 call `QUALIFIED` with the `LARGE`
+    flag — matches rubric.txt's expected answer exactly).
+  - **Cal.com booking confirmed working end-to-end** against a real Cal.com
+    account: fetched real slots, matched/fell back correctly, created a
+    real booking (`calcom_booking_id` populated, `booked_at` set).
+  - Claude/Telegram/HubSpot still fail independently into `step_errors` —
+    no credentials for those three yet. No step ever blocks another.
+- **Next step:** Phase 4, the dashboard. Still need real Telegram/HubSpot/
+  Anthropic credentials before those three
   integrations actually work — re-run `npm run replay` after adding each
   and check `step_errors` on the resulting row.
 - GitHub repo is **private** (was public when created — changed this
@@ -113,15 +118,15 @@ Set, locally and on Vercel: `DATABASE_URL`, `DATABASE_URL_UNPOOLED`,
 `GEMINI_API_KEY`, `GEMINI_MODEL`, `RESEND_API_KEY`, `AUTH_SECRET`,
 `VANI_WEBHOOK_SECRET`, `TELEGRAM_WEBHOOK_SECRET`, `CRON_SECRET`, `APP_URL`
 (production value is the real Vercel URL; `.env.local` keeps `localhost:3000`
-for local dev).
+for local dev), `CALCOM_API_KEY`, `CALCOM_EVENT_TYPE_ID` (Cal.com's default
+"30 min meeting", id `7409849` — no dedicated "Design Consultation" event
+type exists yet).
 
-Still placeholder (everywhere): `ALLOWED_EMAILS`, `VANI_API_KEY`,
-`VANI_AGENT_ID`, `VANI_PHONE_NUMBER`, `CALCOM_API_KEY`,
-`CALCOM_EVENT_TYPE_ID`, `TELEGRAM_BOT_TOKEN`, `TELEGRAM_DESIGNER_CHAT_ID`,
+Still placeholder (everywhere): `ALLOWED_EMAILS` (empty = test mode, see
+above), `VANI_API_KEY`, `VANI_AGENT_ID`, `VANI_PHONE_NUMBER`,
+`TELEGRAM_BOT_TOKEN`, `TELEGRAM_DESIGNER_CHAT_ID`,
 `TELEGRAM_ESCALATION_CHAT_ID`, `HUBSPOT_PRIVATE_APP_TOKEN`,
-`ANTHROPIC_API_KEY`, `ANTHROPIC_MODEL`, `DESIGNER_NAME`. `ALLOWED_EMAILS`
-being empty means **no one can sign in yet** — set it before trying the
-login flow for real.
+`ANTHROPIC_API_KEY`, `ANTHROPIC_MODEL`, `DESIGNER_NAME`.
 
 ## Open assumptions
 
@@ -153,13 +158,14 @@ login flow for real.
 **Already done this session:** `npm install`, `npm run db:migrate` against
 the real Neon database, pushed to GitHub (private repo), deployed to Vercel
 production, Vercel's default SSO deployment protection disabled (it blocked
-plain-HTTP callers like Vani/Telegram/cron-job.org).
+plain-HTTP callers like Vani/Telegram/cron-job.org), Cal.com wired up and
+booking confirmed working against a real account.
 
 **Still to do:**
 1. Add to both `.env.local` and Vercel's env vars: `ALLOWED_EMAILS`,
-   `CALCOM_API_KEY`/`CALCOM_EVENT_TYPE_ID`, `TELEGRAM_BOT_TOKEN`/
-   `TELEGRAM_DESIGNER_CHAT_ID`/`TELEGRAM_ESCALATION_CHAT_ID`,
-   `HUBSPOT_PRIVATE_APP_TOKEN`, `ANTHROPIC_API_KEY`.
+   `TELEGRAM_BOT_TOKEN`/`TELEGRAM_DESIGNER_CHAT_ID`/
+   `TELEGRAM_ESCALATION_CHAT_ID`, `HUBSPOT_PRIVATE_APP_TOKEN`,
+   `ANTHROPIC_API_KEY`.
 2. **HubSpot, once:** Settings > Data Management > Deal pipelines — add a
    stage labelled exactly "Consultation booked". Settings > Data Management
    > Properties > Deal properties > Create property — Number, internal name

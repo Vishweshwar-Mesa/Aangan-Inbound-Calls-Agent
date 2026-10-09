@@ -2,6 +2,15 @@
 
 One entry per commit, newest first: date, what changed, files, how tested.
 
+## 2026-10-09 — docs: Cal.com verified working end-to-end
+- No code changes — `CALCOM_API_KEY` and `CALCOM_EVENT_TYPE_ID` (Cal.com's
+  default "30 min meeting", id `7409849`) set locally and on Vercel.
+- Tested against the real Cal.com account: fetched real slots, booked a
+  real test consultation (`calcom_booking_id` and `booked_at` populated on
+  the resulting row). Confirms `lib/calcom.ts`'s slot-matching and booking
+  logic, and the `cal-api-version` headers, are correct. Test booking and
+  rows cleaned up afterward.
+
 ## 2026-10-09 — feat: login test mode (empty ALLOWED_EMAILS allows any email)
 - `lib/auth.ts`: `signIn` callback now allows any email when
   `ALLOWED_EMAILS` is empty; added `isTestMode()`.
