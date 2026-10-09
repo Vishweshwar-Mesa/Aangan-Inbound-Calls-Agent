@@ -1,8 +1,12 @@
 // Posts seed/payloads/sample-call-ended.json (a placeholder shape — see its
 // _ASSUME field) to the local call-ended webhook. Run with: npm run replay
-import "dotenv/config";
 import { readFileSync } from "node:fs";
 import path from "node:path";
+
+import { config } from "dotenv";
+
+// `dotenv/config` only loads `.env` by default, not `.env.local`.
+config({ path: ".env.local" });
 
 async function main() {
   const payloadPath = path.join(process.cwd(), "seed/payloads/sample-call-ended.json");

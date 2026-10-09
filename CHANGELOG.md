@@ -2,6 +2,33 @@
 
 One entry per commit, newest first: date, what changed, files, how tested.
 
+## 2026-10-09 — fix: .env.local loading, stale Gemini model, first deploy
+- Fixed `drizzle.config.ts` and `scripts/replay.ts`: both used
+  `import "dotenv/config"`, which only loads `.env`, not `.env.local` —
+  every var was silently undefined, falling back to a placeholder
+  `localhost:5432` connection. This is what made `npm run db:migrate` hang
+  (not a real connectivity problem). Both now call
+  `config({ path: ".env.local" })` explicitly.
+- Fixed `lib/gemini.ts`: `GEMINI_MODEL` defaulted to the now-retired
+  `gemini-2.0-flash` (the API 404s and names `gemini-3.8-flash` as the
+  replacement). Updated the fallback and `.env.local`/Vercel's value.
+- Added `pg`/`@types/pg` as a dev dependency — drizzle-kit prefers it over
+  `@neondatabase/serverless`'s websocket driver for `db:migrate` once it's
+  installed, which is more reliable in sandboxed/CI-like environments.
+- Deployed: pushed to the private GitHub repo
+  `Vishweshwar-Mesa/Aangan-Inbound-Calls-Agent` (was public — switched to
+  private, since it holds real call transcripts and internal pricing data),
+  linked and deployed to Vercel production
+  (https://aangan-build-kit.vercel.app), disabled Vercel's default SSO
+  deployment protection (it would block Vani/Telegram/cron-job.org, which
+  have no Vercel login), applied migrations to the real Neon database.
+- Tested: `npm run replay` against the real database and Gemini — the
+  webhook correctly upserted the sample call, Gemini routed it `QUALIFIED`
+  with the `LARGE` flag (matches rubric.txt's expected answer for that
+  transcript), and Cal.com/Claude/Telegram/HubSpot each failed
+  independently into `step_errors` with no credentials set, exactly as
+  designed. Test row deleted afterward. `npm run build` is clean.
+
 ## 2026-10-07 — phase-3: post-call actions
 - `lib/pricing.ts`: internal per-sq-ft bands (residential/commercial),
   never caller-facing.

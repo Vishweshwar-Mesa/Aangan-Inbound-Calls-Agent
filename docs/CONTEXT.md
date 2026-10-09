@@ -1,17 +1,33 @@
 # Context — current state
 
 Rewritten in place after every change. Keep it under 150 lines. Last updated:
-2026-10-07, end of Phase 3.
+2026-10-09, deployed to production; Phase 3 confirmed working end-to-end
+against the real database and Gemini.
 
 ## Where we are
 
-- **Phase:** 3 (post-call actions) — done.
-- **Next step:** Phase 4, the dashboard. All of Phase 3's integrations are
-  implemented against real API shapes but **not yet exercised against live
-  accounts** — no Cal.com/Telegram/HubSpot/Anthropic credentials in this
-  session. Run `npm run replay` once credentials are in `.env.local` and
-  check `step_errors` on the resulting row for any integration that needs
-  fixing.
+- **Phase:** 3 (post-call actions) — done and verified live. **Deployed**:
+  https://aangan-build-kit.vercel.app (Vercel project `vishu-mesa/aangan-build-kit`),
+  code pushed to the private GitHub repo
+  `Vishweshwar-Mesa/Aangan-Inbound-Calls-Agent`. Vercel's default SSO
+  deployment protection was disabled (it would have blocked Vani/Telegram/
+  cron-job.org, which are plain HTTP callers with no Vercel login).
+- **Verified via `npm run replay` against the real Neon database:** the
+  webhook correctly upserts, Gemini re-scores correctly (routed the sample
+  T12 call `QUALIFIED` with the `LARGE` flag — matches rubric.txt's
+  expected answer exactly), and `final_route` decision logic is correct.
+  Cal.com/Claude/Telegram/HubSpot each fail independently into
+  `step_errors` with no live credentials, exactly as designed — no step
+  blocked another, nothing crashed the request.
+- **Next step:** Phase 4, the dashboard. Still need real Cal.com/Telegram/
+  HubSpot/Anthropic credentials (and `ALLOWED_EMAILS`) before those four
+  integrations actually work — re-run `npm run replay` after adding each
+  and check `step_errors` on the resulting row.
+- GitHub repo is **private** (was public when created — changed this
+  session, since it holds real call transcripts and internal pricing data).
+  GitHub→Vercel auto-deploy-on-push is **not yet connected** (needs a
+  one-time authorization in the Vercel dashboard, Settings → Git) —
+  deploys are manual (`npx vercel --prod`) until then.
 
 ## What exists in the repo
 
@@ -52,19 +68,33 @@ Phase 3 additions:
   back (it only catches `null`/`undefined`, not `""`), so the placeholder
   DB connection string silently became an empty string. All four now use
   `||`. Caught by testing `/api/cron` after `.env.local` was created.
+- **Bug found and fixed:** `drizzle.config.ts` and `scripts/replay.ts` used
+  `import "dotenv/config"`, which only loads `.env` by default — not
+  `.env.local`. Both ran with every var undefined, silently falling back to
+  the placeholder `localhost:5432` connection, which is what made
+  `npm run db:migrate` hang indefinitely (drizzle-kit was trying to reach a
+  Postgres that doesn't exist, not a real connectivity problem). Both now
+  call `config({ path: ".env.local" })` explicitly.
+- **Stale model name:** `GEMINI_MODEL` defaulted to `gemini-2.0-flash`,
+  which the Gemini API now rejects with a 404 telling callers to use
+  `gemini-3.8-flash`. Updated the fallback in `lib/gemini.ts` and the value
+  in `.env.local`/Vercel. (Google's own API error is the source of truth
+  here, not my training data — re-check if this 404s again later.)
 
 ## Built and working
 
-- Everything compiles (`npm run build` clean). `.env.local` exists this
-  session with `GEMINI_API_KEY`, `RESEND_API_KEY`, and generated
-  `AUTH_SECRET`/`VANI_WEBHOOK_SECRET`/`TELEGRAM_WEBHOOK_SECRET`/
-  `CRON_SECRET` — confirmed gitignored and not committed.
-- Smoke-tested without a live database: `/api/telegram` and `/api/cron` both
-  401 without their secret; `/api/cron`, once authenticated, reaches the
-  database query and fails only on `ECONNREFUSED` to the placeholder DB URL.
-- Not yet tested: Cal.com, Telegram Bot API, HubSpot, or Anthropic calls —
-  no credentials for any of them in this session, and no live database to
-  drive a real call through `runPostCallActions()`.
+- Everything compiles (`npm run build` clean) and is deployed to Vercel
+  production. Migrations applied to the real Neon database
+  (`npm run db:migrate`, using the `pg` driver — drizzle-kit auto-selects it
+  over `@neondatabase/serverless` once `pg` is installed, which also sidesteps
+  the websocket-based migrate path).
+- `npm run replay` against the real database and Gemini confirmed the whole
+  webhook flow end-to-end: upsert, re-score, route decision, and
+  `step_errors` isolation per post-call step (see "Where we are" above for
+  the result). The test row was deleted afterward — it was replay/demo data,
+  not a real call.
+- `/api/telegram` and `/api/cron` both 401 without their secret; confirmed
+  on the live deployment too.
 
 ## In progress
 
@@ -72,15 +102,19 @@ Phase 3 additions:
 
 ## Env vars
 
-Still placeholder: `DATABASE_URL`, `DATABASE_URL_UNPOOLED`, `ALLOWED_EMAILS`,
-`VANI_API_KEY`, `VANI_AGENT_ID`, `VANI_PHONE_NUMBER`, `CALCOM_API_KEY`,
+Set, locally and on Vercel: `DATABASE_URL`, `DATABASE_URL_UNPOOLED`,
+`GEMINI_API_KEY`, `GEMINI_MODEL`, `RESEND_API_KEY`, `AUTH_SECRET`,
+`VANI_WEBHOOK_SECRET`, `TELEGRAM_WEBHOOK_SECRET`, `CRON_SECRET`, `APP_URL`
+(production value is the real Vercel URL; `.env.local` keeps `localhost:3000`
+for local dev).
+
+Still placeholder (everywhere): `ALLOWED_EMAILS`, `VANI_API_KEY`,
+`VANI_AGENT_ID`, `VANI_PHONE_NUMBER`, `CALCOM_API_KEY`,
 `CALCOM_EVENT_TYPE_ID`, `TELEGRAM_BOT_TOKEN`, `TELEGRAM_DESIGNER_CHAT_ID`,
 `TELEGRAM_ESCALATION_CHAT_ID`, `HUBSPOT_PRIVATE_APP_TOKEN`,
-`ANTHROPIC_API_KEY`, `ANTHROPIC_MODEL`, `DESIGNER_NAME`.
-
-Set this session (in `.env.local`, not committed): `GEMINI_API_KEY`,
-`GEMINI_MODEL`, `RESEND_API_KEY`, `AUTH_SECRET`, `VANI_WEBHOOK_SECRET`,
-`TELEGRAM_WEBHOOK_SECRET`, `CRON_SECRET`, `APP_URL` (`localhost:3000`).
+`ANTHROPIC_API_KEY`, `ANTHROPIC_MODEL`, `DESIGNER_NAME`. `ALLOWED_EMAILS`
+being empty means **no one can sign in yet** — set it before trying the
+login flow for real.
 
 ## Open assumptions
 
@@ -109,25 +143,30 @@ Set this session (in `.env.local`, not committed): `GEMINI_API_KEY`,
 
 ## Run / test / deploy
 
-1. `npm install` (done).
-2. `.env.local` already has Gemini/Resend/generated secrets. Still add:
-   `DATABASE_URL`/`DATABASE_URL_UNPOOLED` (Neon), `ALLOWED_EMAILS`,
+**Already done this session:** `npm install`, `npm run db:migrate` against
+the real Neon database, pushed to GitHub (private repo), deployed to Vercel
+production, Vercel's default SSO deployment protection disabled (it blocked
+plain-HTTP callers like Vani/Telegram/cron-job.org).
+
+**Still to do:**
+1. Add to both `.env.local` and Vercel's env vars: `ALLOWED_EMAILS`,
    `CALCOM_API_KEY`/`CALCOM_EVENT_TYPE_ID`, `TELEGRAM_BOT_TOKEN`/
    `TELEGRAM_DESIGNER_CHAT_ID`/`TELEGRAM_ESCALATION_CHAT_ID`,
    `HUBSPOT_PRIVATE_APP_TOKEN`, `ANTHROPIC_API_KEY`.
-3. **HubSpot, once:** Settings > Data Management > Deal pipelines — add a
+2. **HubSpot, once:** Settings > Data Management > Deal pipelines — add a
    stage labelled exactly "Consultation booked". Settings > Data Management
    > Properties > Deal properties > Create property — Number, internal name
    `ai_call_cost_inr`.
-4. **Telegram, once:** after setting `TELEGRAM_BOT_TOKEN` and
+3. **Telegram, once:** after setting `TELEGRAM_BOT_TOKEN` and
    `TELEGRAM_WEBHOOK_SECRET`, point the bot at the webhook:
-   `curl -X POST https://api.telegram.org/bot$TELEGRAM_BOT_TOKEN/setWebhook -d url=$APP_URL/api/telegram -d secret_token=$TELEGRAM_WEBHOOK_SECRET`.
-5. **Cron, once deployed:** schedule a GET every 10 minutes from
-   cron-job.org to `$APP_URL/api/cron` with header
-   `Authorization: Bearer <CRON_SECRET>`.
-6. `npm run db:migrate`, `npm run dev`, `npm run replay` — check the new
-   row's `step_errors` for anything still failing.
-7. `npm run build` to confirm the production build is clean.
+   `curl -X POST https://api.telegram.org/bot$TELEGRAM_BOT_TOKEN/setWebhook -d url=$APP_URL/api/telegram -d secret_token=$TELEGRAM_WEBHOOK_SECRET`
+   (use the real production `APP_URL`).
+4. **Cron:** schedule a GET every 10 minutes from cron-job.org to
+   `$APP_URL/api/cron` with header `Authorization: Bearer <CRON_SECRET>`.
+5. **GitHub auto-deploy** isn't connected yet — Vercel dashboard, project
+   Settings > Git > Connect Git Repository, authorize the private repo.
+6. After adding each credential, `npm run replay` locally and check
+   `step_errors` on the new row for that integration.
 
 ## Pass bars
 

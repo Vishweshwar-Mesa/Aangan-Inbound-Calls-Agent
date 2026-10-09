@@ -81,7 +81,7 @@ async function callGemini(transcript: string): Promise<unknown> {
   const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
   const response = await ai.models.generateContent({
     // `||` not `??`: same empty-string-vs-unset gotcha as lib/db.ts.
-    model: process.env.GEMINI_MODEL || "gemini-2.0-flash",
+    model: process.env.GEMINI_MODEL || "gemini-3.8-flash",
     contents: transcript,
     config: {
       systemInstruction: getSystemInstruction(),
