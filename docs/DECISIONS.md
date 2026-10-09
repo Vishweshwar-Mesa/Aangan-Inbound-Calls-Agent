@@ -178,3 +178,17 @@ first attempt still got it wrong despite trying to check docs first.
 and the "Consultation booked" stage on the default pipeline
 (`POST /crm/v3/pipelines/deals/default/stages`, id `4416526020`) directly
 with the service key's write scopes, once it was clear the key could do it.
+
+### 2026-10-09 · D19 · Designer brief uses Gemini, not Claude (reverses part of D09/CLAUDE.md Phase 3)
+**Decision:** `lib/claude.ts`'s `writeDesignerBrief()` calls Gemini
+(`@google/genai`, same `GEMINI_API_KEY`/`GEMINI_MODEL` as the re-score),
+not Anthropic's Claude. The module keeps its filename from the Phase 1
+module list, but no longer imports `@anthropic-ai/sdk` (uninstalled) and
+`ANTHROPIC_API_KEY`/`ANTHROPIC_MODEL` are removed from `.env.example`.
+**Why:** Requested directly — the brief-writing task (summarizing
+structured call data into ≤120 words) doesn't need a second model, and
+avoids requiring a separate Anthropic billing account for this build.
+**Rejected:** Keeping Claude for this one step alone. Nothing about the
+task specifically needs Claude over Gemini; the original split (Gemini for
+scoring, Claude for the brief) was a stack choice, not a capability
+requirement.

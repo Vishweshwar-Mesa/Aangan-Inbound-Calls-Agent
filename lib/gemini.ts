@@ -81,7 +81,9 @@ async function callGemini(transcript: string): Promise<unknown> {
   const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
   const response = await ai.models.generateContent({
     // `||` not `??`: same empty-string-vs-unset gotcha as lib/db.ts.
-    model: process.env.GEMINI_MODEL || "gemini-3.8-flash",
+    // "-latest" alias, not a pinned version, so this doesn't go stale again
+    // the way gemini-2.0-flash did.
+    model: process.env.GEMINI_MODEL || "gemini-flash-latest",
     contents: transcript,
     config: {
       systemInstruction: getSystemInstruction(),

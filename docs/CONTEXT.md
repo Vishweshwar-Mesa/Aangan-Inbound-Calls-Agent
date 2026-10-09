@@ -1,8 +1,9 @@
 # Context — current state
 
 Rewritten in place after every change. Keep it under 150 lines. Last updated:
-2026-10-09, deployed to production; Phase 3 confirmed working end-to-end
-against the real database and Gemini; login running in test mode.
+2026-10-09, deployed to production; **all four Phase 3 integrations
+(Cal.com, Gemini brief, Telegram, HubSpot) confirmed working end-to-end
+against real accounts**; login running in test mode.
 
 ## Where we are
 
@@ -41,11 +42,17 @@ as config state, not incidents.
     contact create, deal create, "Consultation booked" stage, and the
     `ai_call_cost_inr` property all worked (`hubspot_contact_id`/
     `hubspot_deal_id` populated).
-  - Only Claude fails into `step_errors` now — no `ANTHROPIC_API_KEY` yet.
-    No step ever blocks another.
-- **Next step:** Phase 4, the dashboard. Just `ANTHROPIC_API_KEY` left
-  before every Phase 3 integration is live — re-run `npm run replay` after
-  adding it and check `step_errors` on the resulting row.
+  - **Designer brief now uses Gemini, not Anthropic's Claude** (DECISIONS
+    D19) — avoids a second LLM provider/billing account for one short
+    brief. `@anthropic-ai/sdk` uninstalled; `ANTHROPIC_API_KEY`/
+    `ANTHROPIC_MODEL` removed from `.env.example`. Confirmed producing a
+    correct, well-formed ≤120-word brief ending in the required
+    "Internal — never share:" line.
+  - **A full `npm run replay` with all four integrations live produced zero
+    `step_errors`** — booking, brief, Telegram send, and HubSpot contact+deal
+    all succeeded in one call. Phase 3 is functionally complete.
+- **Next step:** Phase 4, the dashboard. All four Phase 3 integrations are
+  live — nothing left blocking it.
 - GitHub repo is **private** (was public when created — changed this
   session, since it holds real call transcripts and internal pricing data).
   GitHub→Vercel auto-deploy-on-push is **not yet connected** (needs a
@@ -98,11 +105,12 @@ Phase 3 additions:
   `npm run db:migrate` hang indefinitely (drizzle-kit was trying to reach a
   Postgres that doesn't exist, not a real connectivity problem). Both now
   call `config({ path: ".env.local" })` explicitly.
-- **Stale model name:** `GEMINI_MODEL` defaulted to `gemini-2.0-flash`,
-  which the Gemini API now rejects with a 404 telling callers to use
-  `gemini-3.8-flash`. Updated the fallback in `lib/gemini.ts` and the value
-  in `.env.local`/Vercel. (Google's own API error is the source of truth
-  here, not my training data — re-check if this 404s again later.)
+- **Stale model name, twice:** `GEMINI_MODEL` defaulted to `gemini-2.0-flash`,
+  which the API rejected with a 404 pointing to `gemini-3.8-flash`. Rather
+  than pin that (and hit this again later), switched the default — and
+  `.env.local`/Vercel's value — to `gemini-flash-latest`, an alias that
+  always points to the current flash model. Verified both the re-score and
+  the Gemini-written brief work correctly against it.
 
 ## Built and working
 
@@ -139,11 +147,14 @@ registered against the production URL. `HUBSPOT_PRIVATE_APP_TOKEN` — note
 this account issues HubSpot's newer "service key" (prefix `pat-na2-...`),
 not the classic "private app" token; same Bearer auth, works as a drop-in.
 The "Consultation booked" stage and `ai_call_cost_inr` property both exist
-in HubSpot (created via the API directly, not the UI).
+in HubSpot (created via the API directly, not the UI). `GEMINI_MODEL` is
+`gemini-flash-latest` (an alias, not a pinned version — used for both the
+re-score and the designer brief; no `ANTHROPIC_*` vars needed anymore,
+see DECISIONS D19).
 
 Still placeholder (everywhere): `ALLOWED_EMAILS` (empty = test mode, see
 above), `VANI_API_KEY`, `VANI_AGENT_ID`, `VANI_PHONE_NUMBER`,
-`ANTHROPIC_API_KEY`, `ANTHROPIC_MODEL`, `DESIGNER_NAME`.
+`DESIGNER_NAME`.
 
 ## Open assumptions
 
@@ -168,19 +179,17 @@ above), `VANI_API_KEY`, `VANI_AGENT_ID`, `VANI_PHONE_NUMBER`,
 **Already done this session:** `npm install`, `npm run db:migrate` against
 the real Neon database, pushed to GitHub (private repo), deployed to Vercel
 production, Vercel's default SSO deployment protection disabled (it blocked
-plain-HTTP callers like Vani/Telegram/cron-job.org), Cal.com/Telegram/
-HubSpot all wired up and confirmed working against real accounts (booking,
-brief send + "Got it" ack, contact/deal creation).
+plain-HTTP callers like Vani/Telegram/cron-job.org), all four Phase 3
+integrations (Cal.com, Gemini brief, Telegram, HubSpot) wired up and
+confirmed working end-to-end against real accounts in a single
+zero-`step_errors` `npm run replay` run.
 
 **Still to do:**
-1. Add to both `.env.local` and Vercel's env vars: `ALLOWED_EMAILS`,
-   `ANTHROPIC_API_KEY`.
+1. Add to both `.env.local` and Vercel's env vars: `ALLOWED_EMAILS`.
 2. **Cron:** schedule a GET every 10 minutes from cron-job.org to
    `$APP_URL/api/cron` with header `Authorization: Bearer <CRON_SECRET>`.
 3. **GitHub auto-deploy** isn't connected yet — Vercel dashboard, project
    Settings > Git > Connect Git Repository, authorize the private repo.
-4. After adding `ANTHROPIC_API_KEY`, `npm run replay` locally and check
-   `step_errors` on the new row — `claude` should finally succeed too.
 
 ## Pass bars
 

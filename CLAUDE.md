@@ -22,7 +22,7 @@ ends, when Vani posts the call to our webhook. The webhook then:
 
 1. Saves the call.
 2. Re-scores it with Gemini against `rubric.txt`.
-3. For qualified callers: books the consultation in Cal.com, has Claude write a
+3. For qualified callers: books the consultation in Cal.com, has Gemini write a
    designer brief, sends it to the designer on Telegram, and creates a contact
    and deal in HubSpot.
 4. For existing clients: alerts Nikhil on Telegram, marked URGENT.
@@ -103,8 +103,11 @@ not in the chat. Three files are the source of truth:
   `docs/DECISIONS.md` D14.
 - Recharts for charts. Zod for validating every external payload and every AI
   JSON response.
-- Gemini (Flash) for re-scoring; Claude for the designer brief. Read the model
-  names from env vars.
+- Gemini (Flash) for re-scoring and the designer brief. Read the model name
+  from env vars. (Originally spec'd as Claude for the brief; swapped to
+  avoid a second LLM provider/billing account for one short brief — see
+  `docs/DECISIONS.md` D19. `lib/claude.ts` keeps its name from the Phase 1
+  module list but calls Gemini.)
 - Cal.com API v2, Telegram Bot API, HubSpot CRM API (free tier, private app
   token).
 - Timezone everywhere: `Asia/Kolkata`.
@@ -125,8 +128,6 @@ TELEGRAM_WEBHOOK_SECRET=
 HUBSPOT_PRIVATE_APP_TOKEN=
 GEMINI_API_KEY=
 GEMINI_MODEL=
-ANTHROPIC_API_KEY=
-ANTHROPIC_MODEL=
 DATABASE_URL=
 DATABASE_URL_UNPOOLED=
 RESEND_API_KEY=
@@ -170,7 +171,7 @@ exposed to the client.
 | calcom_booking_id | text | |
 | booked_at | timestamptz | the consultation time |
 | invite_bounced | boolean | default false |
-| brief | text | Claude's brief |
+| brief | text | the designer brief (see D19 — written by Gemini) |
 | telegram_sent_at, telegram_ack_at | timestamptz | |
 | hubspot_contact_id, hubspot_deal_id | text | |
 | review_outcome | text | null / confirmed_decline / sent_to_designer |
@@ -239,7 +240,8 @@ Each step logs its own error to `step_errors` and continues.
    otherwise book the nearest slot after them. The attendee is the caller's
    name, email and `Asia/Kolkata`. Save `calcom_booking_id` and `booked_at`.
    Cal.com sends the invite.
-2. Claude brief, at most 120 words, covering: who called, the property and its
+2. Designer brief (Gemini, not Claude — see D19), at most 120 words,
+   covering: who called, the property and its
    size, the scope, the timeline, the decision-maker, budget only if
    volunteered, likely job size, an internal indicative range from the pricing
    bands in `lib/pricing.ts` × carpet area (labelled "internal — never share"),

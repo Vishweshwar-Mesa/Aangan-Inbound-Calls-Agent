@@ -2,6 +2,21 @@
 
 One entry per commit, newest first: date, what changed, files, how tested.
 
+## 2026-10-09 — feat: designer brief uses Gemini (not Claude); GEMINI_MODEL -> latest alias
+- `lib/claude.ts`: swapped `@anthropic-ai/sdk` for `@google/genai` — the
+  brief now uses the same Gemini credentials as the re-score. Uninstalled
+  `@anthropic-ai/sdk`; removed `ANTHROPIC_API_KEY`/`ANTHROPIC_MODEL` from
+  `.env.example`. Decision + reasoning in `docs/DECISIONS.md` D19.
+- `lib/gemini.ts`, `lib/claude.ts`: `GEMINI_MODEL` default changed from the
+  pinned `gemini-3.8-flash` to the `gemini-flash-latest` alias, so this
+  doesn't go stale again the way `gemini-2.0-flash` did. Verified against
+  the live Gemini models list.
+- Tested: `npm run replay` against every real account at once — Cal.com
+  booking, Gemini-written brief (correct, ≤120 words, ends with the
+  required "Internal — never share:" line), Telegram send, and HubSpot
+  contact+deal all succeeded with **zero `step_errors`**. Phase 3 is now
+  functionally complete end-to-end. `npm run build` clean.
+
 ## 2026-10-09 — fix: wrong HubSpot deal→contact association type id
 - `lib/hubspot.ts`: `DEAL_TO_CONTACT_ASSOCIATION_TYPE_ID` was `5`, taken
   from a docs lookup during Phase 3 that turned out wrong — the real
