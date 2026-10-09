@@ -2,9 +2,16 @@
 
 Rewritten in place after every change. Keep it under 150 lines. Last updated:
 2026-10-09, deployed to production; Phase 3 confirmed working end-to-end
-against the real database and Gemini.
+against the real database and Gemini; login running in test mode.
 
 ## Where we are
+
+- **⚠️ Login is in test mode right now:** `ALLOWED_EMAILS` is empty, so
+  **any email can sign into the live dashboard** at
+  https://aangan-build-kit.vercel.app — real call transcripts, phone
+  numbers and internal pricing are one magic-link away from anyone with the
+  URL. The login page shows a visible warning. Set `ALLOWED_EMAILS` (locally
+  and on Vercel) to close this — see DECISIONS D17.
 
 - **Phase:** 3 (post-call actions) — done and verified live. **Deployed**:
   https://aangan-build-kit.vercel.app (Vercel project `vishu-mesa/aangan-build-kit`),

@@ -1,4 +1,4 @@
-import { signIn } from "@/lib/auth";
+import { isTestMode, signIn } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -29,6 +29,13 @@ export default async function LoginPage({
           </CardDescription>
         </CardHeader>
         <CardContent>
+          {isTestMode() && (
+            <p className="mb-4 rounded-md border border-amber-300 bg-amber-50 p-3 text-sm text-amber-900 dark:border-amber-900 dark:bg-amber-950 dark:text-amber-200">
+              ⚠️ Test mode: <code>ALLOWED_EMAILS</code> isn&apos;t set, so{" "}
+              <strong>any email can sign in</strong>. Set it before real call
+              data goes live here.
+            </p>
+          )}
           <form
             action={async (formData: FormData) => {
               "use server";

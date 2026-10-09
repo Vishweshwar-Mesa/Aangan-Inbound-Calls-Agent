@@ -15,6 +15,14 @@ function getAllowedEmails(): string[] {
     .filter(Boolean);
 }
 
+// Test mode: an empty ALLOWED_EMAILS lets any email sign in, so the app can
+// be tried before real access control is decided. The login page shows a
+// visible warning whenever this is true — see DECISIONS.md D17. Set
+// ALLOWED_EMAILS to turn this off.
+export function isTestMode(): boolean {
+  return getAllowedEmails().length === 0;
+}
+
 export const { handlers, auth, signIn, signOut } = NextAuth({
   adapter: DrizzleAdapter(db, {
     usersTable: users,
@@ -33,6 +41,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   callbacks: {
     async signIn({ user }) {
       if (!user.email) return false;
+      if (isTestMode()) return true;
       return getAllowedEmails().includes(user.email.toLowerCase());
     },
   },

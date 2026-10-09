@@ -142,3 +142,21 @@ fit rather than inventing a new env var unprompted.
 **Rejected:** Adding a new `TELEGRAM_FRONTDESK_CHAT_ID` env var without
 being asked. Revisit if a dedicated front-desk chat turns out to be wanted —
 trivial to add later.
+
+### 2026-10-09 · D17 · Login test mode: empty `ALLOWED_EMAILS` lets any email sign in
+**Decision:** `lib/auth.ts`'s `signIn` callback allows any email when
+`ALLOWED_EMAILS` is empty, instead of CLAUDE.md's original "blocks every
+page unless the email is in `ALLOWED_EMAILS`" with no exception. The login
+page shows a visible amber warning whenever this is active, naming
+`ALLOWED_EMAILS` as the fix.
+**Why:** Requested explicitly, to try the deployed app (already public at
+https://aangan-build-kit.vercel.app) before deciding who gets real access.
+**Risk, stated plainly:** while this is on, anyone who has the URL can sign
+in with any email and see real call transcripts, phone numbers, and
+internal pricing — there is no other access gate in front of the dashboard.
+**Rejected:** A separate `TEST_MODE` env var (an empty `ALLOWED_EMAILS`
+already means "not configured yet", so reusing it needs no new var and
+can't drift out of sync with it).
+**To close:** set `ALLOWED_EMAILS` to the real list of who should have
+access — the warning disappears and normal enforcement resumes
+immediately, no code change needed.

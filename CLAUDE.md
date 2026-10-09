@@ -190,7 +190,9 @@ Add indexes on `started_at`, `final_route` and `review_outcome`.
   `calcom.ts`, `telegram.ts`, `hubspot.ts`, `db.ts`. Each exports typed
   functions and nothing else.
 - Magic-link login. Middleware blocks every page unless the signed-in email is
-  in `ALLOWED_EMAILS`.
+  in `ALLOWED_EMAILS` — except in test mode (an empty `ALLOWED_EMAILS`),
+  where any email can sign in and the login page says so visibly. See
+  `docs/DECISIONS.md` D17.
 - Set up project memory:
   - check that `docs/CONTEXT.md`, `docs/DECISIONS.md` and `CHANGELOG.md`
     exist (starter versions are in the kit) and fill in what Phase 1 built

@@ -2,6 +2,16 @@
 
 One entry per commit, newest first: date, what changed, files, how tested.
 
+## 2026-10-09 — feat: login test mode (empty ALLOWED_EMAILS allows any email)
+- `lib/auth.ts`: `signIn` callback now allows any email when
+  `ALLOWED_EMAILS` is empty; added `isTestMode()`.
+- `app/login/page.tsx`: visible amber warning banner when test mode is
+  active, naming `ALLOWED_EMAILS` as the fix.
+- Decision + risk recorded in `docs/DECISIONS.md` D17 and flagged at the
+  top of `docs/CONTEXT.md` — the live deployment currently has no real
+  access gate on the dashboard.
+- Tested: `npm run build` clean.
+
 ## 2026-10-09 — fix: .env.local loading, stale Gemini model, first deploy
 - Fixed `drizzle.config.ts` and `scripts/replay.ts`: both used
   `import "dotenv/config"`, which only loads `.env`, not `.env.local` —
