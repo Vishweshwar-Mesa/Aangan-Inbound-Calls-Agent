@@ -2,6 +2,25 @@
 
 One entry per commit, newest first: date, what changed, files, how tested.
 
+## 2026-10-09 — fix: real Vaani AI webhook auth (HMAC, not shared header)
+- Checked the actual voice platform's docs (Vaani AI, `docs.vaanivoice.ai`)
+  before Phase 6 instead of using Phase 2's placeholder. Two real-world
+  corrections: `app/api/vani/call-ended/route.ts` now verifies
+  `X-Vaani-Signature`/`X-Vaani-Timestamp` HMAC-SHA256 signing (over the raw
+  body, with replay-window checking) instead of a plain shared header;
+  `lib/vani.ts`'s `normalizeVaniPayload()` now matches the documented
+  `call_postprocessing` event shape (data nested under `data`), not
+  `call_ended` (which has no transcript at all).
+- `scripts/replay.ts` and `seed/payloads/sample-call-ended.json` updated to
+  match — replay now signs its request the same way Vaani does.
+- No caller phone/name/email field is documented anywhere for this
+  platform; left `null` in `normalizeVaniPayload()` rather than guess a
+  field name. Recorded as an open assumption (DECISIONS D21).
+- Tested: unsigned requests get 401; `npm run replay` (now self-signing)
+  gets 200 and the resulting row has correct `started_at`/`duration_s`/
+  `ended_reason`/`final_route` from the new payload shape. `npm run build`
+  clean.
+
 ## 2026-10-09 — phase-5: eval and seed-demo scripts
 - `scripts/eval.ts` (`npm run eval`): re-scores all 20 test transcripts
   with Gemini, prints expected-vs-got, agreement %, false negatives, and

@@ -79,8 +79,12 @@ Still placeholder: `ALLOWED_EMAILS` (empty = test mode), `VANI_AGENT_ID`,
   confirmed live (D18).
 - Preferred-time matching (`chrono-node`) uses a 90-minute tolerance, not
   exact.
-- Vani's real payload shape, and how it sends the webhook secret, are
-  unknown — `lib/vani.ts` matches only the kit's placeholder.
+- The voice platform is **Vaani AI** (`app.vaanivoice.ai`). Webhook auth
+  (HMAC-SHA256, `X-Vaani-Signature`/`X-Vaani-Timestamp`) and the
+  `call_postprocessing` event/payload shape are confirmed from real docs
+  (DECISIONS D21) — but no caller phone/name/email field is documented
+  anywhere, and no real payload has been seen yet. Update `lib/vani.ts`
+  once a real call comes through.
 - Three Nikhil confirmations are pending (DECISIONS D13): the timeline
   cutoff, the sub-500-sqft office rule, the budget floors.
 - Consultation-to-won rate is unknown; `getWonRates()` in `lib/analytics.ts`

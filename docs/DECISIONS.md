@@ -160,6 +160,36 @@ needed for the brief/Telegram/HubSpot steps to run at all without changing
 **Rejected:** Making `runPostCallActions()` branch on `review_outcome` as
 well as `final_route` — more surface area for the same outcome.
 
+### 2026-10-09 · D21 · Real Vaani AI docs: HMAC webhook signing, not a shared secret header
+**Decision:** The voice platform is **Vaani AI** (`app.vaanivoice.ai`), not
+a generic "Vani Labs" — confirmed from the account's own dashboard.
+Checked their real docs (`docs.vaanivoice.ai`) before building Phase 6, per
+CLAUDE.md's "don't guess API shapes" rule. Two things changed from Phase
+2's placeholder:
+1. **Auth:** Vaani signs webhooks with HMAC-SHA256, not a plain shared
+   header. `app/api/vani/call-ended/route.ts` now verifies
+   `X-Vaani-Signature: sha256={hex}` against
+   `HMAC-SHA256(VANI_WEBHOOK_SECRET, "{X-Vaani-Timestamp}.{raw body}")`,
+   with a 5-minute replay-window check, computed over the raw request body
+   text (not re-serialized JSON) — see `lib/vani.ts`'s
+   `verifyVaniSignature()`.
+2. **Event + shape:** point the webhook at `call_postprocessing`, not
+   `call_ended` (which carries no transcript — just room/duration/end
+   reason). `call_postprocessing` nests transcript/recording/summary under
+   `data`. `lib/vani.ts`'s `normalizeVaniPayload()` updated to match.
+**Still unconfirmed (no real payload seen yet):** no caller phone/name/
+email field appears in any documented example. Left `null` for all three
+rather than guess a field name — `agent_route`/`preferred_times` are
+read from `data.entities` only if present, since Vaani supports configurable
+per-agent entity extraction but its configuration UI wasn't found in docs.
+**Why:** HMAC verification and the correct event/payload shape are
+security- and correctness-critical; worth getting right from real docs
+before the agent goes live, rather than shipping the Phase 2 placeholder
+to production.
+**Rejected:** Leaving the plain-header check in place "until a real call
+arrives" — the real mechanism was discoverable now, so there was no reason
+to ship the known-wrong placeholder.
+
 ### 2026-10-09 · D17 · Login test mode: empty `ALLOWED_EMAILS` lets any email sign in
 **Decision:** `lib/auth.ts`'s `signIn` callback allows any email when
 `ALLOWED_EMAILS` is empty, instead of CLAUDE.md's original "blocks every

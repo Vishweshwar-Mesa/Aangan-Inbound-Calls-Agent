@@ -5,7 +5,7 @@ import { db } from "@/lib/db";
 import { calls } from "@/lib/db/schema";
 import { type RescoreResult, rescoreCall } from "@/lib/gemini";
 import { runPostCallActions } from "@/lib/post-call";
-import { normalizeVaniPayload, type VaniCallEndedPayload } from "@/lib/vani";
+import { normalizeVaniPayload, verifyVaniSignature, type VaniCallEndedPayload } from "@/lib/vani";
 
 export const runtime = "nodejs";
 
@@ -35,15 +35,22 @@ function decideRoute(
 }
 
 export async function POST(req: Request) {
-  const expectedSecret = process.env.VANI_WEBHOOK_SECRET;
-  const providedSecret = req.headers.get("x-webhook-secret");
-  if (!expectedSecret || providedSecret !== expectedSecret) {
+  // Must verify against the raw body text — signatures are computed over
+  // exact bytes, not the re-serialized JSON.
+  const rawBody = await req.text();
+  const signatureValid = verifyVaniSignature(
+    rawBody,
+    req.headers.get("x-vaani-timestamp"),
+    req.headers.get("x-vaani-signature"),
+    process.env.VANI_WEBHOOK_SECRET,
+  );
+  if (!signatureValid) {
     return NextResponse.json({ error: "unauthorized" }, { status: 401 });
   }
 
   let raw: VaniCallEndedPayload;
   try {
-    raw = await req.json();
+    raw = JSON.parse(rawBody);
   } catch {
     return NextResponse.json({ error: "invalid JSON body" }, { status: 400 });
   }
