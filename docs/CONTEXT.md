@@ -89,6 +89,10 @@ are read as config state, not incidents.
   data backfilled via `npm run seed-demo`. **"Overview" renamed "Principal's
   View" (D27)** — nav label, page heading, sheet title only; route/content
   unchanged.
+- **Fixed nav header wrapping onto two lines** — the profile email link had
+  `truncate` without a `max-w-*`, so it never truncated; combined with the
+  longer "Principal's View" label this overflowed the header's `max-w-6xl`
+  container on every screen size. Fixed in `components/nav.tsx`.
 
 ## What exists in the repo
 

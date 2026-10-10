@@ -2,6 +2,17 @@
 
 One entry per commit, newest first: date, what changed, files, how tested.
 
+## 2026-10-10 — fix: nav header wrapped onto two lines
+- `components/nav.tsx`: the profile email link had `truncate` with no
+  `max-w-*`, so it never actually truncated — combined with the longer
+  "Principal's View" tab label, the header's content overflowed its fixed
+  `max-w-6xl` container on every screen size, pushing "Sign out" + the
+  north arrow onto a second line. Fixed: `max-w-[170px]` on the email link,
+  grouped email/sign-out/arrow into one flex cluster (so if it ever does
+  wrap, it wraps as a unit instead of splitting), trimmed header/tab
+  padding and gaps.
+- Tested: `npm run build` clean.
+
 ## 2026-10-10 — feat: verdict field + "Principal's View" rename
 - New `calls.verdict` column (`drizzle/0003_sudden_energizer.sql`): one or
   two plain-English sentences from Gemini on whether a lead is worth the
