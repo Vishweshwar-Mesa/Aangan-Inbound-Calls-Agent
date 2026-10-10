@@ -466,3 +466,27 @@ first reproduced the original failure, second confirmed the email fallback
 populates correctly (new failure was Cal.com's own, correct,
 `@example.com` rejection), third passed clean end-to-end with a
 deliverable email.
+
+### 2026-10-10 · D30 · Rotated stale `VANI_WEBHOOK_SECRET` on Vercel production
+**Decision:** Re-set `VANI_WEBHOOK_SECRET` on Vercel production to match
+the value in `.env.local` (the same one pasted into Vaani's webhook
+config).
+**Why:** The user ran Vaani's own built-in WebRTC test-call feature
+(Conversations → History — a real, no-phone-number way to test the live
+agent that I hadn't found in their docs) — a real 6:39 completed call. It
+never showed up on our dashboard. `vercel logs --json` showed the webhook
+did fire (`POST /api/vani/call-ended` ~7 min after the call started,
+matching its duration + processing time) but got **401 Unauthorized** —
+signature verification failed, so the request was rejected before any
+`calls` row was even inserted. Root cause: Vercel's `VANI_WEBHOOK_SECRET`
+had been set ~2 days before the webhook was actually registered in Vaani's
+dashboard (today) — almost certainly stale relative to whatever secret got
+pasted in at registration time. Since Vercel stores it as a write-only
+Secret (can't be read back to confirm the mismatch directly), the fix was
+to just overwrite it with the known-correct value rather than guess.
+**Not yet verified:** needs a fresh deployment (env var changes don't
+apply to already-running functions) and another WebRTC test call to
+confirm the 401 is gone and a row lands in `calls`.
+**Rejected:** Debugging further by trying to read the stale value — not
+possible (Secret-type vars are write-only on Vercel); overwriting was
+strictly faster and no riskier.

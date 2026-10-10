@@ -2,6 +2,16 @@
 
 One entry per commit, newest first: date, what changed, files, how tested.
 
+## 2026-10-10 — fix: stale VANI_WEBHOOK_SECRET on Vercel production (D30)
+- No code changed. A real WebRTC test call in Vaani's dashboard (their
+  built-in no-phone-number test feature) never reached our dashboard;
+  `vercel logs --json` showed the webhook fired but got 401'd. Vercel's
+  `VANI_WEBHOOK_SECRET` had been set ~2 days before the webhook was
+  registered in Vaani today, so it was almost certainly stale. Reset it to
+  match `.env.local` via `vercel env rm`/`vercel env add`.
+- Needs a fresh deploy (env var changes don't apply retroactively) and
+  another test call to confirm fixed — not yet verified.
+
 ## 2026-10-10 — docs: update dummy-call test script for the D25 pricing change
 - `seed/dummy-calls.md` scenario 6 (rude price push) still said the agent
   should "never say a number" — stale since D25 now lets it state one

@@ -26,22 +26,28 @@ are read as config state, not incidents.
 - **Login is in test mode:** `ALLOWED_EMAILS` is empty, so any email can
   sign in. The login page shows a visible warning. Set `ALLOWED_EMAILS`
   (locally and on Vercel) for real access control — see D17.
-- **Phase 6 (Vaani) — ready except the phone number.** Platform is
-  **Vaani AI** (`app.vaanivoice.ai`). Agent "Aangan Leads Inbound"
-  (`VANI_AGENT_ID=3f53df76-f3ff-4514-b5e2-31fa586fa1bc`, found via Vaani's
-  `GET /api/agents` API, not the dashboard) has: the current system prompt
-  live (confirmed via API read-back — includes the D25 pricing update),
-  greeting set, language English-only (D22), webhook registered and active
-  (`APP_URL/api/vani/call-ended`, event `call_postprocessing`, secret
-  matches `VANI_WEBHOOK_SECRET` — confirmed via API read-back), and
-  content-safety guardrails enabled (`level: strict`, sexual/violence/
-  threatening all on — set directly via Vaani's `update-training` API).
+- **Phase 6 (Vaani) — webhook signature issue just fixed, unverified.**
+  Platform is **Vaani AI** (`app.vaanivoice.ai`). Agent "Aangan Leads
+  Inbound" (`VANI_AGENT_ID=3f53df76-f3ff-4514-b5e2-31fa586fa1bc`, found via
+  Vaani's `GET /api/agents` API, not the dashboard) has: the current system
+  prompt live (confirmed via API read-back — includes the D25 pricing
+  update), greeting set, language English-only (D22), webhook registered
+  and active (`APP_URL/api/vani/call-ended`, event `call_postprocessing`),
+  content-safety guardrails enabled (`level: strict`, all three on — set
+  via Vaani's `update-training` API). Vaani also has a **built-in WebRTC
+  test-call feature** (Conversations → History) — no phone number needed
+  to test the live agent. **A real test call via that feature didn't reach
+  our dashboard**: `vercel logs` showed the webhook fired but got 401'd
+  (signature mismatch) — Vercel's `VANI_WEBHOOK_SECRET` was stale (set 2
+  days before the webhook was registered today). Reset it to match
+  `.env.local` (D30) — **needs a fresh deploy + another test call to
+  confirm fixed**.
   No knowledge base/FAQ in use, deliberately — see D-notes inline in
   DECISIONS.md around D25/D26. **Still open:** agent is **not published**
-  (`published_at: null` — check for a Publish step before expecting live
-  calls to route); **no phone number** (`VANI_PHONE_NUMBER` empty,
-  deliberately deferred by request) — the one remaining blocker to placing
-  real/dummy test calls.
+  (`published_at: null`); **no phone number** (`VANI_PHONE_NUMBER` empty,
+  deliberately deferred by request) — not blocking the dummy-call test
+  script in `seed/dummy-calls.md` anymore, since WebRTC test calls work
+  without one.
 - **Pricing policy (D25, reverses D02):** the agent may state one fixed
   starting rate once it knows home vs. office (₹1,800/sq ft or
   ₹1,200/sq ft), never a computed total. `price_mentioned` now means
