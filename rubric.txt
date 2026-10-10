@@ -192,6 +192,7 @@ Return JSON only:
   "criteria": {"c1": "pass|fail|unclear", "c2": "...", "c3": "...",
                "c4": "...", "c5": "..."},
   "reasons": "one sentence per failed or unclear criterion",
+  "verdict": "one or two sentences: a plain recommendation on whether this lead is worth the designer's time, and why (D26)",
   "fields": {"name": "", "locality": "", "property_type": "",
              "carpet_area_sqft": null, "scope": "", "current_state": "",
              "completion_needed_by": "", "decision_maker": "",

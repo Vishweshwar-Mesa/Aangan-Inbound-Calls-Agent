@@ -67,6 +67,11 @@ export default async function ReviewPage() {
                 )}
 
                 {call.reasons && <p className="text-sm text-[#111111]">{call.reasons}</p>}
+                {call.verdict && (
+                  <p className="border-l-2 border-[#111111] pl-3 text-sm font-medium text-[#6B6659]">
+                    {call.verdict}
+                  </p>
+                )}
 
                 <div className="flex gap-2 border-t-2 border-[#111111] pt-3">
                   <form action={confirmDecline}>

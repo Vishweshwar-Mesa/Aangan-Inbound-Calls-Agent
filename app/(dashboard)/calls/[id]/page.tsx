@@ -95,6 +95,13 @@ export default async function CallDetailPage({
         )}
       </div>
 
+      {call.verdict && (
+        <div className="border-2 border-[#111111] bg-[#DEDAD2] px-5 py-4">
+          <p className="text-xs font-bold tracking-wide uppercase text-[#6B6659]">Verdict</p>
+          <p className="mt-1 text-sm font-medium text-[#111111]">{call.verdict}</p>
+        </div>
+      )}
+
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
         <div className="flex flex-col gap-4 lg:col-span-2">
           {call.brief && (

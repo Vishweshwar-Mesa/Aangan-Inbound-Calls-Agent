@@ -354,3 +354,35 @@ this decision; on those actual calls the agent fully deflected rather than
 stating the new starting rate, so `price_mentioned` is correctly still
 `false` for both — this doesn't change the eval pass bar's "0 price
 overreach" expectation across the existing 20-call test set.
+
+### 2026-10-10 · D26 · Added a `verdict` field: a plain "worth pursuing or not" call
+**Decision:** Gemini's post-call re-score now returns a `verdict` field — one
+or two sentences recommending whether a lead is worth the designer's time
+and why — in addition to the existing structured `criteria`/`reasons`.
+Stored in a new `calls.verdict` column (`drizzle/0003_sudden_energizer.sql`).
+Added to `rubric.txt` section 7's JSON schema, `lib/gemini.ts`
+(`RescoreSchema`, `RescoreResult`), and the webhook
+(`app/api/vani/call-ended/route.ts`). Shown as a banner on the Call detail
+page and inline on the Review queue. `scripts/seed-demo.ts` derives a
+plausible verdict for the 20 historical demo calls from their already-known
+expected route/flags/desk note, rather than re-running Gemini on them.
+**Why:** Requested directly — the existing `criteria`/`reasons` fields are
+structured per-check output (pass/fail/unclear, one sentence each); nothing
+gave a holistic plain-English recommendation a founder or designer could
+read at a glance, especially useful on NEEDS_REVIEW calls in the queue.
+**Rejected:** Overloading the existing `reasons` field for this — it has a
+different, narrower contract ("one sentence per failed/unclear criterion")
+and mixing the two would make `reasons` harder to parse/display
+consistently.
+
+### 2026-10-10 · D27 · Overview renamed "Principal's View" (reverses CLAUDE.md Phase 4's nav labels)
+**Decision:** The page at `/` (nav label, `<h1>`, and the drafting title
+block's sheet title) is now "Principal's View" instead of "Overview."
+Route, URL, sheet number (A-01), and the page's content/layout are
+unchanged — this is a label-only change (`components/nav.tsx`,
+`app/(dashboard)/page.tsx`, `components/sheet-footer.tsx`).
+**Why:** Requested directly, fitting the firm's own language — Nikhil is
+the principal architect, and this page is specifically his morning
+overview, not a generic team dashboard.
+**Rejected:** Nothing else considered; this is a direct, unambiguous
+naming request.

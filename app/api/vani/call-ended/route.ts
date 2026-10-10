@@ -131,6 +131,7 @@ export async function POST(req: Request) {
       finalRoute,
       criteria: rescore.criteria,
       reasons: rescore.reasons,
+      verdict: rescore.verdict,
       fields: rescore.fields,
       flags,
       confidence: String(rescore.confidence),

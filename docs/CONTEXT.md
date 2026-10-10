@@ -83,6 +83,12 @@ are read as config state, not incidents.
   round-trip tested directly against the `user` table with a throwaway
   session (name saved, page re-fetch showed it back), nav renders the
   sign-out button and profile link, no server errors.
+- **Added a `verdict` field (D26)** — Gemini's re-score now returns a plain
+  "worth pursuing or not" sentence or two, stored in a new `calls.verdict`
+  column, shown on Call detail (banner) and Review queue (inline). Demo
+  data backfilled via `npm run seed-demo`. **"Overview" renamed "Principal's
+  View" (D27)** — nav label, page heading, sheet title only; route/content
+  unchanged.
 
 ## What exists in the repo
 

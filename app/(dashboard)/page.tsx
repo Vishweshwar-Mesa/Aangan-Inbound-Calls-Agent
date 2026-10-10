@@ -41,7 +41,7 @@ export default async function OverviewPage() {
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight text-[#111111]">OVERVIEW</h1>
+        <h1 className="text-2xl font-bold tracking-tight text-[#111111]">PRINCIPAL&apos;S VIEW</h1>
         <p className="text-sm font-medium text-[#6B6659]">LAST {WINDOW_DAYS} DAYS</p>
       </div>
 

@@ -4,7 +4,7 @@ import { usePathname } from "next/navigation";
 
 // Drawing-set sheet numbers, in the same spirit as the nav's page order.
 const SHEETS: { match: (path: string) => boolean; title: string; dwg: string }[] = [
-  { match: (p) => p === "/", title: "OVERVIEW", dwg: "A-01" },
+  { match: (p) => p === "/", title: "PRINCIPAL'S VIEW", dwg: "A-01" },
   { match: (p) => p === "/calls", title: "CALLS", dwg: "A-02" },
   { match: (p) => p.startsWith("/calls/"), title: "CALL DETAIL", dwg: "A-02.1" },
   { match: (p) => p === "/review", title: "REVIEW QUEUE", dwg: "A-03" },

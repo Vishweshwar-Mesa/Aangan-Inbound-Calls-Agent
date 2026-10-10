@@ -20,6 +20,7 @@ const RescoreSchema = z.object({
     c5: z.enum(["pass", "fail", "unclear"]),
   }),
   reasons: z.string(),
+  verdict: z.string(),
   fields: z.object({
     name: z.string().nullable().optional(),
     locality: z.string().nullable().optional(),
@@ -43,6 +44,7 @@ export interface RescoreResult {
   route: z.infer<typeof RescoreSchema>["route"];
   criteria: z.infer<typeof RescoreSchema>["criteria"];
   reasons: string;
+  verdict: string;
   fields: z.infer<typeof RescoreSchema>["fields"];
   flags: string[];
   confidence: number;
@@ -54,6 +56,7 @@ const INVALID_RESULT: RescoreResult = {
   route: "NEEDS_REVIEW",
   criteria: { c1: "unclear", c2: "unclear", c3: "unclear", c4: "unclear", c5: "unclear" },
   reasons: "Gemini returned invalid JSON after one retry.",
+  verdict: "",
   fields: {},
   flags: [],
   confidence: 0,
@@ -109,6 +112,7 @@ export async function rescoreCall(transcript: string): Promise<RescoreResult> {
         route: parsed.route,
         criteria: parsed.criteria,
         reasons: parsed.reasons,
+        verdict: parsed.verdict,
         fields: parsed.fields,
         flags: parsed.flags,
         confidence: parsed.confidence,

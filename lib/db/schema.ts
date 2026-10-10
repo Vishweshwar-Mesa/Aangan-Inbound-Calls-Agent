@@ -99,6 +99,10 @@ export const calls = pgTable(
     finalRoute: text("final_route"),
     criteria: jsonb("criteria"),
     reasons: text("reasons"),
+    // One or two sentences, Gemini's plain-English call on whether this
+    // lead is worth the designer's time — distinct from `reasons` (which is
+    // strictly "one sentence per failed/unclear criterion"). See D26.
+    verdict: text("verdict"),
     fields: jsonb("fields"),
     flags: text("flags").array(),
     confidence: numeric("confidence"),

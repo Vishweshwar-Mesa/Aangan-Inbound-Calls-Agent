@@ -2,6 +2,22 @@
 
 One entry per commit, newest first: date, what changed, files, how tested.
 
+## 2026-10-10 — feat: verdict field + "Principal's View" rename
+- New `calls.verdict` column (`drizzle/0003_sudden_energizer.sql`): one or
+  two plain-English sentences from Gemini on whether a lead is worth the
+  designer's time, distinct from the structured `criteria`/`reasons`.
+  `rubric.txt`, `lib/gemini.ts`, `app/api/vani/call-ended/route.ts` updated;
+  shown as a banner on Call detail and inline on the Review queue.
+  `scripts/seed-demo.ts` derives a verdict for the 20 historical demo calls
+  from their known outcome. See D26.
+- Renamed "Overview" to "Principal's View" (`components/nav.tsx`,
+  `app/(dashboard)/page.tsx`, `components/sheet-footer.tsx`) — label only,
+  route/content unchanged. See D27.
+- Tested: `npm run build` clean; migration applied to Neon; re-ran
+  `npm run seed-demo`; verified live with a throwaway session — verdict
+  banner renders correctly on Call detail (demo T03), "Principal's View"
+  renders in nav/heading/sheet title, no server errors.
+
 ## 2026-10-10 — fix: drafting-sheet grid was hidden; add sign-out + profile page
 - `app/(dashboard)/layout.tsx`: removed a solid `bg-[#E7E4DD]` on the root
   wrapper that painted over the body's graph-paper grid on every dashboard

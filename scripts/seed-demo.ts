@@ -72,6 +72,29 @@ function parseHeader(headerLine: string): { startedAt: Date; durationS: number; 
   return { startedAt, durationS, missed };
 }
 
+// A plain-English "worth pursuing" line, same spirit as what Gemini writes
+// live (rubric.txt section 7, D26) — derived here from the test set's
+// already-known outcome rather than re-running Gemini for 20 historical
+// calls.
+function buildVerdict(call: TestCall, missed: boolean): string | null {
+  if (missed) return null;
+  switch (call.expected_route) {
+    case "QUALIFIED":
+      return call.expected_flags.length > 0
+        ? `Worth pursuing — meets all criteria (${call.expected_flags.join(", ")}).`
+        : "Worth pursuing — meets all criteria, no red flags.";
+    case "ESCALATE":
+      return "Not a new lead — an existing client issue needing a service recovery call, not a sales follow-up.";
+    case "NOT_A_FIT":
+    case "NOT_ENQUIRY":
+      return call.desk_note
+        ? `Not worth pursuing — ${call.desk_note.replace(/\.$/, "")}.`
+        : "Not worth pursuing — doesn't meet the service criteria.";
+    default:
+      return "Borderline — worth a quick human look before deciding either way.";
+  }
+}
+
 function extractCallerName(transcript: string): string | null {
   // Transcripts use a curly apostrophe (’, U+2019), not a straight one.
   const match = transcript.match(
@@ -122,6 +145,7 @@ async function main() {
         finalRoute: missed ? null : call.expected_route,
         criteria: call.expected_criteria,
         reasons: call.desk_note ?? (missed ? "No transcript — call was not answered or had no conversation." : null),
+        verdict: buildVerdict(call, missed),
         fields: call.expected_fields,
         flags: call.expected_flags,
         confidence: missed ? null : "1",
@@ -145,6 +169,7 @@ async function main() {
           finalRoute: missed ? null : call.expected_route,
           criteria: call.expected_criteria,
           reasons: call.desk_note ?? null,
+          verdict: buildVerdict(call, missed),
           fields: call.expected_fields,
           flags: call.expected_flags,
           priceMentioned: call.price_mentioned,

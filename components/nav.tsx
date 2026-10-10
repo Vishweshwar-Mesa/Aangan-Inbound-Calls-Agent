@@ -8,7 +8,7 @@ import { NorthArrow } from "@/components/drafting-marks";
 import { cn } from "@/lib/utils";
 
 const LINKS = [
-  { href: "/", label: "Overview" },
+  { href: "/", label: "Principal's View" },
   { href: "/calls", label: "Calls" },
   { href: "/review", label: "Review" },
   { href: "/analytics", label: "Analytics" },
