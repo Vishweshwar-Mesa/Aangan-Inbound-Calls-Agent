@@ -193,7 +193,7 @@ Return JSON only:
                "c4": "...", "c5": "..."},
   "reasons": "one sentence per failed or unclear criterion",
   "verdict": "one or two sentences: a plain recommendation on whether this lead is worth the designer's time, and why (D26)",
-  "fields": {"name": "", "locality": "", "property_type": "",
+  "fields": {"name": "", "email": "", "locality": "", "property_type": "",
              "carpet_area_sqft": null, "scope": "", "current_state": "",
              "completion_needed_by": "", "decision_maker": "",
              "budget_volunteered": null, "source": "", "consult_type": ""},
@@ -206,6 +206,12 @@ If "route" differs from the agent's live decision:
   NEEDS_REVIEW for the designer.
 - Agent said NOT_A_FIT, Gemini says QUALIFIED -> NEEDS_REVIEW; the front
   desk calls back within the working day.
+
+`fields.email`: the email the caller gave and confirmed in step 5a, read
+from the transcript. Used as a fallback for `caller_email` when Vani's own
+payload doesn't carry it (D29) — Cal.com needs an email or phone to book
+the attendee, so this directly enables booking for calls the platform
+itself doesn't tag with a caller email.
 
 
 8. TEST SET — September phone calls (expected route)

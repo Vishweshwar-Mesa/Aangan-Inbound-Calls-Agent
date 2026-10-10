@@ -124,9 +124,20 @@ export async function POST(req: Request) {
   const rescore = await rescoreCall(normalized.transcript);
   const { finalRoute, flags } = decideRoute(normalized.agentRoute, rescore);
 
+  // Vani's own payload doesn't document a caller name/email field (D21) —
+  // fall back to what Gemini read off the transcript, since the agent's
+  // own script (rubric.txt step 5a) requires it to collect and confirm an
+  // email on every qualified call. Cal.com needs at least one contact
+  // method to book the attendee, so this directly fixes bookings that
+  // would otherwise fail with no caller contact info at all (D29).
+  const callerName = normalized.callerName ?? rescore.fields.name ?? null;
+  const callerEmail = normalized.callerEmail ?? rescore.fields.email ?? null;
+
   await db
     .update(calls)
     .set({
+      callerName,
+      callerEmail,
       geminiRoute: rescore.route,
       finalRoute,
       criteria: rescore.criteria,

@@ -425,3 +425,44 @@ filter states — Calls page row counts by outcome changed correctly when
 remaining 3 being the filter picker's own button labels, not table rows);
 Principal's View and Analytics both render without error under the same
 filter state.
+
+### 2026-10-10 · D29 · Fall back to Gemini's transcript-extracted email when Vani's payload has none
+**Decision:** `app/api/vani/call-ended/route.ts` now sets
+`callerName`/`callerEmail` from `rescore.fields.name`/`rescore.fields.email`
+(Gemini's re-score, parsed from the transcript) whenever Vani's own payload
+(`normalizeVaniPayload`'s `entities.*`) doesn't have them. Added `email` to
+the `fields` Gemini extracts (`rubric.txt` section 7, `lib/gemini.ts`
+`RescoreSchema`).
+**Why:** Found via a manual end-to-end test (a synthetic `call_postprocessing`
+payload with `entities: null`, matching Vani's actual documented shape,
+which has no caller contact field at all): Cal.com booking failed with
+"Attendee must have at least one contact method," because
+`lib/post-call.ts` passes `call.callerEmail ?? ""` to Cal.com, and nothing
+ever populated `callerEmail` except Vani's own (undocumented, likely
+nonexistent for `call_postprocessing`) `entities.caller_email`. Meanwhile
+the agent's own script (step 5a) requires it to collect and read back the
+caller's email on every qualified call, and Gemini already parses the full
+transcript — so the email is sitting right there, just never used as a
+fallback. Re-tested after the fix: caller name/email correctly backfilled;
+Cal.com booking succeeded end-to-end once a real-looking (non-`example.com`)
+email was used (Cal.com separately, correctly rejects `@example.com` as
+non-deliverable — that is not a bug, confirmed while testing this fix).
+**Rejected:** Suppressing/ignoring the Cal.com failure instead of fixing
+root cause — would silently stop booking consultations for exactly the
+calls this system exists to book.
+**Still open, not fixed by this:** `callerNumber` has no equivalent
+fallback — a phone number generally isn't spoken aloud on the call, so
+there's no transcript text for Gemini to extract it from. Vani's
+`call_started`/`human_transfer_initiated` events are documented to include
+a `phone_number` field that `call_postprocessing` lacks; wiring that in
+would need subscribing to a second webhook event and correlating by
+`call_id`/`room_name` — worth doing once a real caller number is actually
+needed for something (e.g. Cal.com also accepts a phone-only attendee, so
+this isn't blocking today, since email alone now satisfies it).
+**Tested:** `npm run build` clean; three full round-trips against a local
+dev server with a real Gemini re-score and real Cal.com/Telegram/HubSpot
+calls (test `vani_call_id=test-mihirr-0001`, deleted between attempts) —
+first reproduced the original failure, second confirmed the email fallback
+populates correctly (new failure was Cal.com's own, correct,
+`@example.com` rejection), third passed clean end-to-end with a
+deliverable email.

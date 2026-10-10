@@ -2,6 +2,25 @@
 
 One entry per commit, newest first: date, what changed, files, how tested.
 
+## 2026-10-10 — fix: Cal.com booking failed with no caller contact info (D29)
+- `app/api/vani/call-ended/route.ts`: `callerName`/`callerEmail` now fall
+  back to Gemini's transcript-extracted `fields.name`/`fields.email`
+  whenever Vani's own payload doesn't have them (its documented
+  `call_postprocessing` shape has no caller contact field at all).
+- `rubric.txt` (section 7 fields), `lib/gemini.ts` (`RescoreSchema`): added
+  `email` to the fields Gemini extracts from the transcript.
+- Found via a manual end-to-end test posting a synthetic call payload
+  (caller "Mihirr") to the local webhook: Cal.com rejected the booking with
+  "Attendee must have at least one contact method." Root cause: nothing
+  ever populated `callerEmail` except Vani's own (nonexistent, for this
+  event) `entities.caller_email`, even though the agent's own script
+  requires collecting and confirming an email on every qualified call.
+- Tested: `npm run build` clean; three full round-trips against a local dev
+  server with real Gemini/Cal.com/Telegram/HubSpot calls — confirmed the
+  fallback populates caller name/email correctly, and a full booking
+  succeeds end-to-end with a deliverable email (Cal.com separately and
+  correctly rejects `@example.com` as non-deliverable — not a bug).
+
 ## 2026-10-10 — feat: global date-range + status filters (D28)
 - New `lib/filter-options.ts` (types/constants, safe for client bundles)
   and `lib/filters.ts` (`getActiveFilters`/`setActiveFilters`, cookie-based,

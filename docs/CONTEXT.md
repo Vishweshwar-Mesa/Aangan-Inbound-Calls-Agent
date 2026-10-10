@@ -48,17 +48,14 @@ are read as config state, not incidents.
   "beyond the approved line," not "any price at all"; dashboard metric is
   "Price overreach."
 - **Dashboard restyle "Drafting Room" (D24)** replaced "Midnight Bento":
-  concrete ground, hard black rules, zero radius, Space Grotesk, one orange
-  alarm color, corner marks/ruler/north-arrow/title-block chrome
-  (`components/drafting-marks.tsx`, `sheet-footer.tsx`), a graph-paper grid
-  behind every page (a layout bug briefly hid it on all pages but `/login`
-  — fixed).
-- **Added since the restyle:** a persistent `contacts` table keyed by phone
-  number (D23); sign-out + a `/profile` page to set a display name
-  (`app/(dashboard)/actions.ts`, `lib/auth.ts` session callback for
-  `user.id`); a `verdict` field — Gemini's plain "worth pursuing or not"
-  line, shown on Call detail and the Review queue (D26); "Overview" renamed
-  "Principal's View" (D27); a nav header overflow bug (fixed).
+  concrete ground, hard black rules, zero radius, Space Grotesk, drafting
+  chrome (`components/drafting-marks.tsx`, `sheet-footer.tsx`), a
+  graph-paper grid behind every page (a layout bug briefly hid it — fixed).
+- **Added since:** a persistent `contacts` table by phone number (D23);
+  sign-out + a `/profile` page for a display name (`app/(dashboard)/actions.ts`,
+  `lib/auth.ts` session callback); a `verdict` field — Gemini's plain
+  "worth pursuing or not" line, on Call detail and the Review queue (D26);
+  "Overview" renamed "Principal's View" (D27); a nav overflow bug (fixed).
 - **Global date-range + status filters (D28):** one shared control
   (`components/global-filters.tsx`, presets Today/7D/30D/90D × status
   All/Qualified/Not a fit/Needs review/Escalated) now drives Principal's
@@ -122,7 +119,13 @@ Still placeholder: `ALLOWED_EMAILS` (empty = test mode),
 
 ## Known bugs
 
-- None currently open.
+- None currently open. **Fixed (D29):** Cal.com bookings failed with "no
+  contact method" whenever Vani's payload had no caller email (which is
+  always, per its documented shape) — `caller_email`/`caller_name` now fall
+  back to Gemini's transcript-extracted `fields.email`/`fields.name`, since
+  the agent's own script requires collecting an email on every qualified
+  call. `caller_number` has no equivalent fallback (not spoken on the
+  call); not blocking since email alone satisfies Cal.com.
 - **Gotcha for any future script:** `config({ path: ".env.local" })`
   (dotenv) then a *static* `import` of `lib/db.ts` reads `DATABASE_URL` as
   empty — ESM hoists static imports ahead of top-level code regardless of

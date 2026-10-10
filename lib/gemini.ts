@@ -23,6 +23,7 @@ const RescoreSchema = z.object({
   verdict: z.string(),
   fields: z.object({
     name: z.string().nullable().optional(),
+    email: z.string().nullable().optional(),
     locality: z.string().nullable().optional(),
     property_type: z.string().nullable().optional(),
     carpet_area_sqft: z.number().nullable().optional(),
