@@ -2,6 +2,20 @@
 
 One entry per commit, newest first: date, what changed, files, how tested.
 
+## 2026-10-10 — phase-6: Vaani agent ID + webhook registered
+- Looked up the "Aangan Leads Inbound" agent's id via Vaani's
+  `GET /api/agents?search=` list-agents API (using the existing
+  `VANI_API_KEY`) instead of copying it from the dashboard — confirmed
+  Vaani has no API for webhook configuration, so that step stayed manual.
+- Set `VANI_AGENT_ID` in `.env.local` and added it to Vercel production
+  (`vercel env add`).
+- Registered the call-ended webhook in the Vaani dashboard: Agent Webhook
+  scoped to "Aangan Leads Inbound", endpoint `APP_URL/api/vani/call-ended`,
+  event **Call Post-Processing**, secret matching `VANI_WEBHOOK_SECRET`.
+- Phone number (`VANI_PHONE_NUMBER`) intentionally deferred — not part of
+  this step.
+- No code changed; docs-only commit per the project's memory rule.
+
 ## 2026-10-10 — style: drafting-sheet grid background
 - `app/globals.css`: added a two-tier graph-paper grid to `body` (20px fine
   lines, 100px bold lines, both translucent black) so the concrete ground

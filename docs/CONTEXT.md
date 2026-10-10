@@ -31,8 +31,20 @@ are read as config state, not incidents.
   message set, language **English only, no Hindi fallback** (D22 — platform
   only supports X-primary-with-English-fallback, not the reverse; all 20
   real transcripts are English), "Use Previous Call Contexts" enabled,
-  "Feed Context via API" left off. Telephony (phone number) and Webhooks
-  not yet configured — still need `VANI_AGENT_ID`/`VANI_PHONE_NUMBER`.
+  "Feed Context via API" left off. **Not yet published** in Vaani (worth
+  checking before expecting live calls to route to it).
+  `VANI_AGENT_ID` (`3f53df76-f3ff-4514-b5e2-31fa586fa1bc`) was looked up via
+  Vaani's `GET /api/agents` list-agents API (no dashboard click needed) and
+  set in `.env.local` and Vercel production. Webhook registered in the
+  dashboard (Settings → Webhooks → Agent Webhook, scoped to this agent),
+  pointed at `APP_URL/api/vani/call-ended`, event **Call Post-Processing**
+  (= the `call_postprocessing` payload `lib/vani.ts` already expects),
+  secret set to the existing `VANI_WEBHOOK_SECRET`. Vaani's API has no
+  endpoint to configure webhooks programmatically — confirmed by checking
+  every documented agent endpoint (deployment, analysis, training,
+  experience, persona); it's dashboard-only. Telephony (phone number)
+  deliberately deferred — still need `VANI_PHONE_NUMBER` once a number is
+  provisioned and linked to the agent.
 - **Added a `contacts` table** (D23): every call now links to a persistent
   per-phone-number identity via `contact_id`, surfaced as a "Caller
   history" card on the Call detail page. Real Vaani calls will have
@@ -86,9 +98,11 @@ pinned version), `RESEND_API_KEY`, `AUTH_SECRET`, `VANI_WEBHOOK_SECRET`,
 `TELEGRAM_BOT_TOKEN` (@Aangan_Inbound_BOT), `TELEGRAM_DESIGNER_CHAT_ID`,
 `TELEGRAM_ESCALATION_CHAT_ID` (same chat ID for both, for now),
 `HUBSPOT_PRIVATE_APP_TOKEN` (this account's "service key", not a classic
-private-app token — same Bearer auth either way), `VANI_API_KEY`.
+private-app token — same Bearer auth either way), `VANI_API_KEY`,
+`VANI_AGENT_ID` (`3f53df76-f3ff-4514-b5e2-31fa586fa1bc`, looked up via
+Vaani's list-agents API, not the dashboard).
 
-Still placeholder: `ALLOWED_EMAILS` (empty = test mode), `VANI_AGENT_ID`,
+Still placeholder: `ALLOWED_EMAILS` (empty = test mode),
 `VANI_PHONE_NUMBER`, `DESIGNER_NAME`.
 
 ## Open assumptions
