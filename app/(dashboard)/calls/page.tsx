@@ -1,5 +1,6 @@
 import Link from "next/link";
 
+import { GlobalFilters } from "@/components/global-filters";
 import { StatusChip } from "@/components/status-chip";
 import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -12,44 +13,25 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { cn } from "@/lib/utils";
 import { formatDateTime, formatDuration } from "@/lib/format";
-import { getRouteCounts, listCalls } from "@/lib/queries";
-
-const FILTERS = [
-  { label: "All", route: undefined },
-  { label: "Qualified", route: "QUALIFIED" },
-  { label: "Not a fit", route: "NOT_A_FIT" },
-  { label: "Needs review", route: "NEEDS_REVIEW" },
-  { label: "Escalated", route: "ESCALATE" },
-] as const;
-
-function buildHref(route: string | undefined, q: string | undefined) {
-  const params = new URLSearchParams();
-  if (route) params.set("route", route);
-  if (q) params.set("q", q);
-  const qs = params.toString();
-  return qs ? `/calls?${qs}` : "/calls";
-}
+import { getActiveFilters } from "@/lib/filters";
+import { listCalls } from "@/lib/queries";
 
 export default async function CallsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ route?: string; q?: string }>;
+  searchParams: Promise<{ q?: string }>;
 }) {
-  const { route, q } = await searchParams;
-  const [calls, counts] = await Promise.all([listCalls({ route, q }), getRouteCounts()]);
-  const totalCount = Object.values(counts).reduce((a, b) => a + b, 0);
+  const { q } = await searchParams;
+  const { status, range, from, to } = await getActiveFilters();
+  const calls = await listCalls({ status, from, to, q });
 
   return (
     <div className="flex flex-col gap-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h1 className="text-2xl font-bold tracking-tight text-[#111111]">CALLS</h1>
         <a
-          href={`/api/calls/export?${new URLSearchParams({
-            ...(route ? { route } : {}),
-            ...(q ? { q } : {}),
-          }).toString()}`}
+          href={`/api/calls/export${q ? `?${new URLSearchParams({ q }).toString()}` : ""}`}
           className={buttonVariants({ variant: "outline", size: "sm" })}
         >
           Export CSV
@@ -57,28 +39,9 @@ export default async function CallsPage({
       </div>
 
       <div className="flex flex-wrap items-center gap-2">
-        {FILTERS.map((filter) => {
-          const active = (route ?? undefined) === filter.route;
-          const count = filter.route ? (counts[filter.route] ?? 0) : totalCount;
-          return (
-            <Link
-              key={filter.label}
-              href={buildHref(filter.route, q)}
-              className={cn(
-                "flex h-9 items-center gap-1.5 border-2 px-3.5 text-sm font-bold tracking-wide uppercase transition-colors",
-                active
-                  ? "border-[#111111] bg-[#111111] text-[#E7E4DD]"
-                  : "border-[#111111] text-[#111111] hover:bg-[#DEDAD2]",
-              )}
-            >
-              {filter.label}
-              <span className={active ? "text-[#A8A295]" : "text-[#6B6659]"}>{count}</span>
-            </Link>
-          );
-        })}
+        <GlobalFilters status={status} range={range} />
 
         <form action="/calls" className="ml-auto flex items-center gap-2">
-          {route && <input type="hidden" name="route" value={route} />}
           <Input
             type="search"
             name="q"

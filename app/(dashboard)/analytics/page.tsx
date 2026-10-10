@@ -1,11 +1,10 @@
-import Link from "next/link";
-
+import { GlobalFilters } from "@/components/global-filters";
 import { HourChart } from "@/components/charts/hour-chart";
 import { Sparkline } from "@/components/charts/sparkline";
 import { WeekdayChart } from "@/components/charts/weekday-chart";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
 import { getAnalyticsSummary, getDailySeries, getWonRates } from "@/lib/analytics";
+import { getActiveFilters } from "@/lib/filters";
 import { formatDuration, formatInr } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
@@ -61,28 +60,11 @@ function StatusBadge({ status }: { status: ScoreStatus }) {
   );
 }
 
-export default async function AnalyticsPage({
-  searchParams,
-}: {
-  searchParams: Promise<{ days?: string; from?: string; to?: string }>;
-}) {
-  const { days, from, to } = await searchParams;
-
-  let since: Date;
-  let until: Date | undefined;
-  let activeDays = days === "60" ? "60" : "30";
-
-  if (from && to) {
-    since = new Date(from);
-    until = new Date(to);
-    activeDays = "custom";
-  } else {
-    const n = activeDays === "60" ? 60 : 30;
-    since = new Date(Date.now() - n * 24 * 60 * 60 * 1000);
-  }
+export default async function AnalyticsPage() {
+  const { status, range, from, to } = await getActiveFilters();
 
   const [summary, dailySeries, wonRates] = await Promise.all([
-    getAnalyticsSummary(since, until),
+    getAnalyticsSummary(from, to, status),
     getDailySeries(),
     getWonRates(),
   ]);
@@ -195,27 +177,7 @@ export default async function AnalyticsPage({
     <div className="flex flex-col gap-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h1 className="text-2xl font-bold tracking-tight text-[#111111]">ANALYTICS</h1>
-        <div className="flex flex-wrap items-center gap-2">
-          {(["30", "60"] as const).map((d) => (
-            <Link
-              key={d}
-              href={`/analytics?days=${d}`}
-              className={cn(
-                "flex h-9 items-center border-2 border-[#111111] px-3.5 text-sm font-bold tracking-wide uppercase",
-                activeDays === d
-                  ? "bg-[#111111] text-[#E7E4DD]"
-                  : "text-[#111111] hover:bg-[#DEDAD2]",
-              )}
-            >
-              {d} days
-            </Link>
-          ))}
-          <form action="/analytics" className="flex items-center gap-1.5">
-            <Input type="date" name="from" defaultValue={from} className="w-36" />
-            <span className="text-sm font-medium text-[#6B6659]">to</span>
-            <Input type="date" name="to" defaultValue={to} className="w-36" />
-          </form>
-        </div>
+        <GlobalFilters status={status} range={range} />
       </div>
 
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">

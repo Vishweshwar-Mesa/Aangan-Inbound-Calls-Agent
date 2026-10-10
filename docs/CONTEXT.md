@@ -1,7 +1,8 @@
 # Context — current state
 
 Rewritten in place after every change. Keep it under 150 lines. Last
-updated: 2026-10-10, mid-Phase 6.
+updated: 2026-10-10, mid-Phase 6. Full reasoning for every decision
+mentioned here lives in `docs/DECISIONS.md` — this file only summarizes.
 
 ## Where we are
 
@@ -12,10 +13,10 @@ are read as config state, not incidents.
 - **Phases 1-5 are done.** Scaffold, auth, the call-ended webhook, all four
   post-call integrations, the six-page dashboard, and the eval/seed scripts
   — all built and verified against real accounts (not just type-checked).
-- **Eval result: 19/19 (100%) agreement, 0 false negatives, 0 prices
-  spoken** — `npm run eval` against the real Gemini re-score, exits 0. The
-  dashboard has real demo data from `npm run seed-demo` (all 20 September
-  test calls, prefixed `demo-`).
+- **Eval result: 19/19 (100%) agreement, 0 false negatives, 0 price
+  overreach** — `npm run eval` against the real Gemini re-score, exits 0.
+  The dashboard has real demo data from `npm run seed-demo` (all 20
+  September test calls, prefixed `demo-`).
 - **Deployed:** https://aangan-build-kit.vercel.app (Vercel project
   `vishu-mesa/aangan-build-kit`). GitHub repo (private):
   `Vishweshwar-Mesa/Aangan-Inbound-Calls-Agent`. **GitHub→Vercel auto-deploy
@@ -24,75 +25,49 @@ are read as config state, not incidents.
   requires all deploys to go through Git for every project.
 - **Login is in test mode:** `ALLOWED_EMAILS` is empty, so any email can
   sign in. The login page shows a visible warning. Set `ALLOWED_EMAILS`
-  (locally and on Vercel) for real access control — see DECISIONS D17.
-- **Phase 6 in progress.** The voice platform is **Vaani AI**
-  (`app.vaanivoice.ai`), not a generic "Vani Labs" — confirmed from the
-  account. Agent "Aangan Leads Inbound" created: prompt pasted, greeting
-  message set, language **English only, no Hindi fallback** (D22 — platform
-  only supports X-primary-with-English-fallback, not the reverse; all 20
-  real transcripts are English), "Use Previous Call Contexts" enabled,
-  "Feed Context via API" left off. **Not yet published** in Vaani (worth
-  checking before expecting live calls to route to it).
-  `VANI_AGENT_ID` (`3f53df76-f3ff-4514-b5e2-31fa586fa1bc`) was looked up via
-  Vaani's `GET /api/agents` list-agents API (no dashboard click needed) and
-  set in `.env.local` and Vercel production. Webhook registered in the
-  dashboard (Settings → Webhooks → Agent Webhook, scoped to this agent),
-  pointed at `APP_URL/api/vani/call-ended`, event **Call Post-Processing**
-  (= the `call_postprocessing` payload `lib/vani.ts` already expects),
-  secret set to the existing `VANI_WEBHOOK_SECRET`. Vaani's API has no
-  endpoint to configure webhooks programmatically — confirmed by checking
-  every documented agent endpoint (deployment, analysis, training,
-  experience, persona); it's dashboard-only. Telephony (phone number)
-  deliberately deferred — still need `VANI_PHONE_NUMBER` once a number is
-  provisioned and linked to the agent.
-- **Pricing policy changed (D25, reverses D02):** the agent may now state
-  one fixed starting rate once it knows home vs. office — ₹1,800/sq ft or
-  ₹1,200/sq ft — but never a computed caller-specific total. Updated in
-  `vani_agent_prompt.md`, `rubric.txt`, and the `price_mentioned` definition
-  in `lib/gemini.ts` (now means "beyond the approved line", not "any price
-  at all"); dashboard metric relabeled "Price overreach". **Not yet live**:
-  the updated `vani_agent_prompt.md` still needs to be re-pasted into the
-  Vaani agent's system prompt for real calls to use it.
-- **Added a `contacts` table** (D23): every call now links to a persistent
-  per-phone-number identity via `contact_id`, surfaced as a "Caller
-  history" card on the Call detail page. Real Vaani calls will have
-  `contact_id = null` until a real caller-phone-number field is found (see
-  D21) — tested directly against the linking logic instead.
-- **Dashboard restyled: "Drafting Room"** (D24) — replaced "Midnight Bento"
-  with an architectural-drawing-set look across all six pages: concrete
-  ground, hard black rules, zero radius, Space Grotesk, one orange alarm
-  color, corner registration marks, a ruler strip, a north-arrow glyph, and
-  a per-page title-block footer (sheet numbers A-01 through A-05). Status
-  chips now use drafting convention (solid=confirmed, dashed=provisional,
-  grayed=excluded, orange=alarm). A two-tier graph-paper grid (20px fine /
-  100px bold lines) sits behind every page as the drafting-sheet ground —
-  **fixed a bug** where `app/(dashboard)/layout.tsx`'s root wrapper div had
-  its own solid `bg-[#E7E4DD]`, painting over the grid on every dashboard
-  page (it was only ever visible on `/login`); removed so the body's grid
-  shows through everywhere. Verified live against real seeded data, not
-  just type-checked.
-- **Added sign-out and a profile page.** The nav had no way to sign out and
-  no profile/account page. `app/(dashboard)/actions.ts` now holds
-  `signOutAction` (wired into a button in `components/nav.tsx`, next to a
-  "north arrow") and `updateProfile` (lets a user set a display `name`,
-  stored on the existing Auth.js `user.name` column — unused until now).
-  New page `app/(dashboard)/profile/` (DWG A-06), linked from the nav's
-  email text. `lib/auth.ts` gained a `session` callback to put `user.id` on
-  `session.user` (needed so `updateProfile` knows which row to update) plus
-  the matching `next-auth` module augmentation. Verified live: read/write
-  round-trip tested directly against the `user` table with a throwaway
-  session (name saved, page re-fetch showed it back), nav renders the
-  sign-out button and profile link, no server errors.
-- **Added a `verdict` field (D26)** — Gemini's re-score now returns a plain
-  "worth pursuing or not" sentence or two, stored in a new `calls.verdict`
-  column, shown on Call detail (banner) and Review queue (inline). Demo
-  data backfilled via `npm run seed-demo`. **"Overview" renamed "Principal's
-  View" (D27)** — nav label, page heading, sheet title only; route/content
-  unchanged.
-- **Fixed nav header wrapping onto two lines** — the profile email link had
-  `truncate` without a `max-w-*`, so it never truncated; combined with the
-  longer "Principal's View" label this overflowed the header's `max-w-6xl`
-  container on every screen size. Fixed in `components/nav.tsx`.
+  (locally and on Vercel) for real access control — see D17.
+- **Phase 6 (Vaani) — ready except the phone number.** Platform is
+  **Vaani AI** (`app.vaanivoice.ai`). Agent "Aangan Leads Inbound"
+  (`VANI_AGENT_ID=3f53df76-f3ff-4514-b5e2-31fa586fa1bc`, found via Vaani's
+  `GET /api/agents` API, not the dashboard) has: the current system prompt
+  live (confirmed via API read-back — includes the D25 pricing update),
+  greeting set, language English-only (D22), webhook registered and active
+  (`APP_URL/api/vani/call-ended`, event `call_postprocessing`, secret
+  matches `VANI_WEBHOOK_SECRET` — confirmed via API read-back), and
+  content-safety guardrails enabled (`level: strict`, sexual/violence/
+  threatening all on — set directly via Vaani's `update-training` API).
+  No knowledge base/FAQ in use, deliberately — see D-notes inline in
+  DECISIONS.md around D25/D26. **Still open:** agent is **not published**
+  (`published_at: null` — check for a Publish step before expecting live
+  calls to route); **no phone number** (`VANI_PHONE_NUMBER` empty,
+  deliberately deferred by request) — the one remaining blocker to placing
+  real/dummy test calls.
+- **Pricing policy (D25, reverses D02):** the agent may state one fixed
+  starting rate once it knows home vs. office (₹1,800/sq ft or
+  ₹1,200/sq ft), never a computed total. `price_mentioned` now means
+  "beyond the approved line," not "any price at all"; dashboard metric is
+  "Price overreach."
+- **Dashboard restyle "Drafting Room" (D24)** replaced "Midnight Bento":
+  concrete ground, hard black rules, zero radius, Space Grotesk, one orange
+  alarm color, corner marks/ruler/north-arrow/title-block chrome
+  (`components/drafting-marks.tsx`, `sheet-footer.tsx`), a graph-paper grid
+  behind every page (a layout bug briefly hid it on all pages but `/login`
+  — fixed).
+- **Added since the restyle:** a persistent `contacts` table keyed by phone
+  number (D23); sign-out + a `/profile` page to set a display name
+  (`app/(dashboard)/actions.ts`, `lib/auth.ts` session callback for
+  `user.id`); a `verdict` field — Gemini's plain "worth pursuing or not"
+  line, shown on Call detail and the Review queue (D26); "Overview" renamed
+  "Principal's View" (D27); a nav header overflow bug (fixed).
+- **Global date-range + status filters (D28):** one shared control
+  (`components/global-filters.tsx`, presets Today/7D/30D/90D × status
+  All/Qualified/Not a fit/Needs review/Escalated) now drives Principal's
+  View, Calls, and Analytics, replacing each page's separate local picker.
+  Persisted in cookies (`lib/filters.ts`), not the URL — see D28 for why.
+- **Known gaps, requested but not yet built:** (1) a designer-by-designer
+  workload view (names + caseload), scoping unfinished; (2) HubSpot only
+  gets name/email/phone/cost today — property type, locality, budget, scope
+  etc. aren't pushed as HubSpot properties despite being collected.
 
 ## What exists in the repo
 
@@ -101,40 +76,31 @@ are read as config state, not incidents.
 - **Phase 3:** `lib/calcom.ts` (booking), `lib/claude.ts` (designer brief —
   uses Gemini, not Anthropic's Claude; see D19), `lib/telegram.ts` (send +
   "Got it" ack + reminders), `lib/hubspot.ts` (contact/deal + portal/stage
-  lookups), orchestrated by `lib/post-call.ts`. `app/api/telegram/route.ts`
-  and `app/api/cron/route.ts`. All four confirmed working end-to-end
-  against real accounts via `npm run replay`, zero `step_errors`.
-- **Phase 4:** six pages under `app/(dashboard)/` (shared `layout.tsx` with
-  `components/nav.tsx`): Overview (`page.tsx`), Calls (`calls/`), Call
-  detail (`calls/[id]/`), Review queue (`review/`, with server actions
-  `confirmDecline`/`sendToDesigner` in `review/actions.ts`), Analytics
-  (`analytics/`, with the full scorecard), Settings (`settings/`, env-var
-  status + per-service "Test connection" + copyable webhook URLs). Data
-  layer: `lib/queries.ts`, `lib/analytics.ts`. "Drafting Room" design
-  tokens live in `app/globals.css` (`:root`/`.dark` are intentionally
-  identical — one fixed light theme, no toggle — see D24); Space Grotesk
-  font; Recharts for the hour/weekday/sparkline charts;
-  `components/drafting-marks.tsx` and `sheet-footer.tsx` for the shared
-  drafting chrome.
+  lookups — see "known gaps" above), orchestrated by `lib/post-call.ts`.
+  `app/api/telegram/route.ts` and `app/api/cron/route.ts`. All four
+  confirmed working end-to-end via `npm run replay`, zero `step_errors`.
+- **Phase 4:** six pages under `app/(dashboard)/` (shared `layout.tsx` +
+  `components/nav.tsx`): Principal's View (`page.tsx`), Calls (`calls/`),
+  Call detail (`calls/[id]/`), Review queue (`review/`, server actions
+  `confirmDecline`/`sendToDesigner`), Analytics (`analytics/`, full
+  scorecard), Settings (`settings/`). Data layer: `lib/queries.ts`,
+  `lib/analytics.ts`, `lib/filters.ts`/`filter-options.ts` (D28).
 - **Verified live** (session created directly in the DB for testing, then
-  deleted): all six pages render correctly with real data; `confirmDecline`
-  and `sendToDesigner` both tested via their actual rendered forms (not just
-  code review) — `sendToDesigner` correctly sets `final_route='QUALIFIED'`
-  (D20), runs the brief/Telegram/HubSpot steps, and skips Cal.com.
+  deleted, repeated for every feature above): all pages render correctly
+  with real data; `confirmDecline`/`sendToDesigner` tested via their actual
+  rendered forms — `sendToDesigner` sets `final_route='QUALIFIED'` (D20),
+  runs brief/Telegram/HubSpot, skips Cal.com.
 
 ## Env vars
 
 Set, locally and on Vercel: `DATABASE_URL`, `DATABASE_URL_UNPOOLED`,
-`GEMINI_API_KEY`, `GEMINI_MODEL` (`gemini-flash-latest` — an alias, not a
-pinned version), `RESEND_API_KEY`, `AUTH_SECRET`, `VANI_WEBHOOK_SECRET`,
+`GEMINI_API_KEY`, `GEMINI_MODEL` (`gemini-flash-latest`, an alias),
+`RESEND_API_KEY`, `AUTH_SECRET`, `VANI_WEBHOOK_SECRET`,
 `TELEGRAM_WEBHOOK_SECRET`, `CRON_SECRET`, `APP_URL`, `CALCOM_API_KEY`,
-`CALCOM_EVENT_TYPE_ID` (Cal.com's default "30 min meeting", id `7409849`),
-`TELEGRAM_BOT_TOKEN` (@Aangan_Inbound_BOT), `TELEGRAM_DESIGNER_CHAT_ID`,
-`TELEGRAM_ESCALATION_CHAT_ID` (same chat ID for both, for now),
-`HUBSPOT_PRIVATE_APP_TOKEN` (this account's "service key", not a classic
-private-app token — same Bearer auth either way), `VANI_API_KEY`,
-`VANI_AGENT_ID` (`3f53df76-f3ff-4514-b5e2-31fa586fa1bc`, looked up via
-Vaani's list-agents API, not the dashboard).
+`CALCOM_EVENT_TYPE_ID` (id `7409849`), `TELEGRAM_BOT_TOKEN`,
+`TELEGRAM_DESIGNER_CHAT_ID`, `TELEGRAM_ESCALATION_CHAT_ID` (shared for now),
+`HUBSPOT_PRIVATE_APP_TOKEN` (service key), `VANI_API_KEY`, `VANI_AGENT_ID`
+(`3f53df76-f3ff-4514-b5e2-31fa586fa1bc`).
 
 Still placeholder: `ALLOWED_EMAILS` (empty = test mode),
 `VANI_PHONE_NUMBER`, `DESIGNER_NAME`.
@@ -143,59 +109,45 @@ Still placeholder: `ALLOWED_EMAILS` (empty = test mode),
 
 - Cal.com v2 header `cal-api-version`: `2024-09-04` for `/slots`,
   `2026-02-25` for `/bookings` — re-verify if these ever start 400ing.
-- "Front desk chat" in the cron reminder reuses `TELEGRAM_ESCALATION_CHAT_ID`
-  (DECISIONS D16); HubSpot's deal-to-contact association type is `3`,
-  confirmed live (D18).
-- Preferred-time matching (`chrono-node`) uses a 90-minute tolerance, not
-  exact.
-- The voice platform is **Vaani AI** (`app.vaanivoice.ai`). Webhook auth
-  (HMAC-SHA256, `X-Vaani-Signature`/`X-Vaani-Timestamp`) and the
-  `call_postprocessing` event/payload shape are confirmed from real docs
-  (DECISIONS D21) — but no caller phone/name/email field is documented
-  anywhere, and no real payload has been seen yet. Update `lib/vani.ts`
-  once a real call comes through.
-- Three Nikhil confirmations are pending (DECISIONS D13): the timeline
-  cutoff, the sub-500-sqft office rule, the budget floors.
-- Consultation-to-won rate is unknown; `getWonRates()` in `lib/analytics.ts`
-  will show "not measured yet" until enough deals close in HubSpot.
+- "Front desk chat" reuses `TELEGRAM_ESCALATION_CHAT_ID` (D16); HubSpot's
+  deal-to-contact association type is `3`, confirmed live (D18).
+- Preferred-time matching (`chrono-node`) uses a 90-minute tolerance.
+- No caller phone/name/email field is documented in Vaani's
+  `call_postprocessing` payload — update `lib/vani.ts` once a real call
+  comes through (D21).
+- Three Nikhil confirmations pending (D13): timeline cutoff, sub-500-sqft
+  office rule, budget floors.
+- Consultation-to-won rate unknown; `getWonRates()` shows "not measured
+  yet" until deals close in HubSpot.
 
 ## Known bugs
 
-- None currently open. `lib/calcom.ts` now stores Cal.com's `uid` (not the
-  numeric `id`) in `calcom_booking_id`, since the dashboard's reschedule
-  link needs the uid — fixed during Phase 4 before any real data relied on
-  the old value.
-- **Gotcha to remember for any future script:** a script that does
-  `config({ path: ".env.local" })` (dotenv) then a *static* `import` of
-  `lib/db.ts` will read `DATABASE_URL` as empty — ESM evaluates all static
-  imports before any top-level code in the importing file, regardless of
+- None currently open.
+- **Gotcha for any future script:** `config({ path: ".env.local" })`
+  (dotenv) then a *static* `import` of `lib/db.ts` reads `DATABASE_URL` as
+  empty — ESM hoists static imports ahead of top-level code regardless of
   source order. `scripts/seed-demo.ts` works around it with a dynamic
-  `await import("../lib/db")` inside `main()`, after `config()` has run.
-  `scripts/eval.ts`/`replay.ts` don't need this since the lib files they
-  import read env vars lazily inside function bodies, not at module load.
+  `await import("../lib/db")` inside `main()`, after `config()` runs.
 
 ## Run / test / deploy
 
 1. `.env.local` has every credential above except `ALLOWED_EMAILS`,
-   `VANI_AGENT_ID`, `VANI_PHONE_NUMBER`, `DESIGNER_NAME`. Vercel's
-   production env vars match.
-2. `npm run dev`, sign in via the test-mode login (any email), browse the
-   dashboard at `localhost:3000`.
-3. `npm run replay` to push a sample call through the whole pipeline; check
-   `step_errors` on the resulting row for anything failing.
-4. `npm run eval` to re-score all 20 test transcripts against the rubric
-   (pass bar: 19/19 agreement, 0 false negatives, 0 prices spoken — exits
-   non-zero otherwise). `npm run seed-demo` to (re-)populate the dashboard
-   with those 20 calls (`demo-*` vani_call_ids, safe to re-run).
+   `VANI_PHONE_NUMBER`, `DESIGNER_NAME`. Vercel's production env matches.
+2. `npm run dev`, sign in via test-mode login (any email).
+3. `npm run replay` to push a sample call through the pipeline; check
+   `step_errors` on the resulting row.
+4. `npm run eval` (pass bar: 19/19 agreement, 0 false negatives, 0 price
+   overreach). `npm run seed-demo` to (re-)populate demo data.
 5. `npm run build` before committing.
 6. `git push` — Vercel deploys automatically. Never run a manual
    `vercel --prod`/`vercel deploy` for this project.
-7. Still to do, not blocked on more credentials: `ALLOWED_EMAILS` (your
-   call), schedule `GET $APP_URL/api/cron` every 10 minutes on
-   cron-job.org with header `Authorization: Bearer <CRON_SECRET>`.
+7. Still to do, not blocked on credentials: `ALLOWED_EMAILS` (your call),
+   schedule `GET $APP_URL/api/cron` every 10 minutes on cron-job.org with
+   header `Authorization: Bearer <CRON_SECRET>`; publish the Vaani agent
+   and attach a phone number when ready.
 
 ## Pass bars
 
 - **Eval:** all 19 answerable calls routed as expected; 0 false negatives;
-  0 prices spoken.
+  0 price overreach.
 - **Dummy calls:** all 8 behave as described in `seed/dummy-calls.md`.

@@ -2,6 +2,24 @@
 
 One entry per commit, newest first: date, what changed, files, how tested.
 
+## 2026-10-10 — feat: global date-range + status filters (D28)
+- New `lib/filter-options.ts` (types/constants, safe for client bundles)
+  and `lib/filters.ts` (`getActiveFilters`/`setActiveFilters`, cookie-based,
+  server-only). New `components/global-filters.tsx` (Today/7D/30D/90D ×
+  All/Qualified/Not a fit/Needs review/Escalated), wired into Principal's
+  View, Calls, and Analytics, replacing each page's own separate picker.
+- `app/(dashboard)/actions.ts`: added `setFilters` server action.
+- `lib/queries.ts` (`getOverviewStats`, `listCalls`), `lib/analytics.ts`
+  (`getAnalyticsSummary`): gained `status`/date-range parameters.
+  `GET /api/calls/export` now reads the same cookies instead of its own
+  `route`/`q` query params. Removed the now-unused `getRouteCounts`.
+- Also condensed `docs/CONTEXT.md` back under its line budget (had drifted
+  to 201 lines across several recent features).
+- Tested: `npm run build` clean; verified live with cookie-simulated filter
+  states on all three pages — Calls page's outcome mix changed correctly
+  under `af_status=QUALIFIED`, Principal's View and Analytics both render
+  without error under the same state.
+
 ## 2026-10-10 — fix: nav header wrapped onto two lines
 - `components/nav.tsx`: the profile email link had `truncate` with no
   `max-w-*`, so it never actually truncated — combined with the longer

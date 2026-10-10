@@ -1,12 +1,13 @@
 import Link from "next/link";
 
+import { GlobalFilters } from "@/components/global-filters";
 import { StatusChip } from "@/components/status-chip";
 import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { RANGE_OPTIONS } from "@/lib/filter-options";
+import { getActiveFilters } from "@/lib/filters";
 import { formatDateTime, formatDuration, formatInr } from "@/lib/format";
 import { getLatestCalls, getNextConsultations, getOverviewStats } from "@/lib/queries";
-
-const WINDOW_DAYS = 30;
 
 function Tile({
   label,
@@ -30,19 +31,28 @@ function Tile({
 }
 
 export default async function OverviewPage() {
+  const { status, range, from, to } = await getActiveFilters();
+
   const [stats, nextConsultations, latestCalls] = await Promise.all([
-    getOverviewStats(WINDOW_DAYS),
+    getOverviewStats(from, to, status),
     getNextConsultations(5),
     getLatestCalls(8),
   ]);
 
   const total = stats.qualified + stats.escalated + stats.closed || 1;
+  const rangeLabel = RANGE_OPTIONS.find((r) => r.value === range)?.label ?? range;
 
   return (
     <div className="flex flex-col gap-6">
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight text-[#111111]">PRINCIPAL&apos;S VIEW</h1>
-        <p className="text-sm font-medium text-[#6B6659]">LAST {WINDOW_DAYS} DAYS</p>
+      <div className="flex flex-wrap items-end justify-between gap-3">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight text-[#111111]">PRINCIPAL&apos;S VIEW</h1>
+          <p className="text-sm font-medium text-[#6B6659]">
+            {rangeLabel.toUpperCase()}
+            {status !== "ALL" ? ` · ${status.replace("_", " ")}` : ""}
+          </p>
+        </div>
+        <GlobalFilters status={status} range={range} />
       </div>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">

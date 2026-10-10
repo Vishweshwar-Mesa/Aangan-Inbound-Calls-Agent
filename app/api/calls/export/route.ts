@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { auth } from "@/lib/auth";
+import { getActiveFilters } from "@/lib/filters";
 import { listCalls } from "@/lib/queries";
 
 export const runtime = "nodejs";
@@ -17,10 +18,10 @@ export async function GET(req: Request) {
   }
 
   const url = new URL(req.url);
-  const route = url.searchParams.get("route") ?? undefined;
   const q = url.searchParams.get("q") ?? undefined;
+  const { status, from, to } = await getActiveFilters();
 
-  const rows = await listCalls({ route, q });
+  const rows = await listCalls({ status, from, to, q });
 
   const header = [
     "received",

@@ -1,7 +1,8 @@
-import { and, asc, desc, eq, gte, isNotNull, isNull, ne, or, sql } from "drizzle-orm";
+import { and, asc, desc, eq, gte, isNotNull, isNull, lte, ne, or, sql } from "drizzle-orm";
 
 import { db } from "./db";
 import { calls } from "./db/schema";
+import type { StatusFilter } from "./filter-options";
 
 // NOT_A_FIT / NEEDS_REVIEW calls with no review_outcome yet — the review
 // queue's workload, shown as a badge count in the nav.
@@ -28,11 +29,19 @@ export interface OverviewStats {
   reviewCount: number;
 }
 
-export async function getOverviewStats(days: number): Promise<OverviewStats> {
-  const since = new Date(Date.now() - days * 24 * 60 * 60 * 1000);
+export async function getOverviewStats(
+  from: Date,
+  to: Date,
+  status: StatusFilter = "ALL",
+): Promise<OverviewStats> {
   const monthStart = new Date();
   monthStart.setDate(1);
   monthStart.setHours(0, 0, 0, 0);
+
+  const windowCondition =
+    status === "ALL"
+      ? and(gte(calls.createdAt, from), lte(calls.createdAt, to))
+      : and(gte(calls.createdAt, from), lte(calls.createdAt, to), eq(calls.finalRoute, status));
 
   const [windowStats, monthCost, reviewCount] = await Promise.all([
     db
@@ -44,7 +53,7 @@ export async function getOverviewStats(days: number): Promise<OverviewStats> {
         avgDurationS: sql<number | null>`avg(${calls.durationS})`,
       })
       .from(calls)
-      .where(gte(calls.createdAt, since)),
+      .where(windowCondition),
     db
       .select({ total: sql<number>`coalesce(sum(${calls.costInr}), 0)` })
       .from(calls)
@@ -112,12 +121,20 @@ const CALL_LIST_COLUMNS = {
 } as const;
 
 export async function listCalls(filters: {
-  route?: string;
+  status?: StatusFilter;
+  from?: Date;
+  to?: Date;
   q?: string;
 }): Promise<CallListRow[]> {
   const conditions = [];
-  if (filters.route) {
-    conditions.push(eq(calls.finalRoute, filters.route));
+  if (filters.status && filters.status !== "ALL") {
+    conditions.push(eq(calls.finalRoute, filters.status));
+  }
+  if (filters.from) {
+    conditions.push(gte(calls.createdAt, filters.from));
+  }
+  if (filters.to) {
+    conditions.push(lte(calls.createdAt, filters.to));
   }
   if (filters.q) {
     const term = `%${filters.q.toLowerCase()}%`;
@@ -163,19 +180,6 @@ export async function getContactCallHistory(contactId: string, excludeCallId: st
 export async function getCallById(id: string) {
   const [call] = await db.select().from(calls).where(eq(calls.id, id));
   return call ?? null;
-}
-
-export async function getRouteCounts(): Promise<Record<string, number>> {
-  const rows = await db
-    .select({ route: calls.finalRoute, count: sql<number>`count(*)` })
-    .from(calls)
-    .groupBy(calls.finalRoute);
-
-  const counts: Record<string, number> = {};
-  for (const row of rows) {
-    counts[row.route ?? "UNSET"] = Number(row.count);
-  }
-  return counts;
 }
 
 export async function getLatestCalls(limit: number): Promise<CallSummary[]> {

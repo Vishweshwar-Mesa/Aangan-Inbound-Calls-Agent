@@ -1,7 +1,8 @@
-import { and, gte, lte, sql } from "drizzle-orm";
+import { and, eq, gte, lte, sql } from "drizzle-orm";
 
 import { db } from "./db";
 import { calls } from "./db/schema";
+import type { StatusFilter } from "./filter-options";
 import { getDealStages } from "./hubspot";
 
 export interface AnalyticsSummary {
@@ -34,10 +35,13 @@ export interface AnalyticsSummary {
 export async function getAnalyticsSummary(
   since: Date,
   until?: Date,
+  status: StatusFilter = "ALL",
 ): Promise<AnalyticsSummary> {
-  const range = until
+  const dateCondition = until
     ? and(gte(calls.createdAt, since), lte(calls.createdAt, until))
     : gte(calls.createdAt, since);
+  const range =
+    status === "ALL" ? dateCondition : and(dateCondition, eq(calls.finalRoute, status));
 
   const [totals] = await db
     .select({

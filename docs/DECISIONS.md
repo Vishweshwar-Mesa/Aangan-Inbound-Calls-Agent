@@ -386,3 +386,42 @@ the principal architect, and this page is specifically his morning
 overview, not a generic team dashboard.
 **Rejected:** Nothing else considered; this is a direct, unambiguous
 naming request.
+
+### 2026-10-10 · D28 · Global date-range + status filters (reverses CLAUDE.md Phase 4's per-page Analytics-only range)
+**Decision:** Added one shared filter control (`components/global-filters.tsx`)
+— date range (Today/7D/30D/90D) and outcome status (All/Qualified/Not a
+fit/Needs review/Escalated) — used on Principal's View, Calls, and
+Analytics. Replaces Analytics' own local 30/60-day + custom-date picker and
+Calls' own separate status pills with one shared control reflecting the
+same state everywhere. Persisted in cookies (`lib/filters.ts`:
+`getActiveFilters`/`setActiveFilters`, set via the `setFilters` server
+action in `app/(dashboard)/actions.ts`), not the URL — a deliberate
+tradeoff: this is an internal tool for 1-2 users, not a product with
+shareable report links, so simpler plumbing (one shared cookie instead of
+rewriting every nav link's query string) won out over bookmarkable
+filtered URLs. Dropped the custom-date-range option that Analytics used to
+have, for v1 scope — presets only.
+Split `lib/filter-options.ts` (types/constants, no server imports) out from
+`lib/filters.ts` (the cookie-reading functions, imports `next/headers`) —
+needed because `components/global-filters.tsx` is a client component and
+bundling `next/headers` into client code fails the build.
+`getOverviewStats`, `listCalls`, `getAnalyticsSummary` all gained a
+`status`/date-range parameter; `GET /api/calls/export` now reads the same
+cookies instead of its own `route`/`q` query params. `getDailySeries`
+(the scorecard sparklines) is intentionally left on its own fixed 60-day,
+unfiltered window — it's a trend reference, not a point-in-time stat, and
+most scorecard metrics would become meaningless pre-filtered to one status.
+**Why:** Requested directly ("full-fledged dashboard options as per market
+standard"), then scoped via follow-up questions to exactly these two
+filters — date range and outcome status — rather than guessing at a wider
+set (locality, source/flags were explicitly declined for now).
+**Rejected:** URL-query-based filters (the more "shareable" market-standard
+pattern) — correct for a multi-user product, unnecessary complexity for
+this internal, single/few-user tool; locality and source/flag filters —
+declined by direct choice, revisit once call volume justifies them.
+**Tested:** `npm run build` clean; verified live with cookie-simulated
+filter states — Calls page row counts by outcome changed correctly when
+`af_status=QUALIFIED` was set (12 non-qualified labels dropped to 3, the
+remaining 3 being the filter picker's own button labels, not table rows);
+Principal's View and Analytics both render without error under the same
+filter state.
