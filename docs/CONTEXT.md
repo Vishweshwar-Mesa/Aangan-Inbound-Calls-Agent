@@ -44,8 +44,9 @@ are read as config state, not incidents.
   color, corner registration marks, a ruler strip, a north-arrow glyph, and
   a per-page title-block footer (sheet numbers A-01 through A-05). Status
   chips now use drafting convention (solid=confirmed, dashed=provisional,
-  grayed=excluded, orange=alarm). Verified live against real seeded data,
-  not just type-checked.
+  grayed=excluded, orange=alarm). A two-tier graph-paper grid (20px fine /
+  100px bold lines) sits behind every page as the drafting-sheet ground.
+  Verified live against real seeded data, not just type-checked.
 
 ## What exists in the repo
 

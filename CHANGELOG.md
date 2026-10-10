@@ -2,6 +2,13 @@
 
 One entry per commit, newest first: date, what changed, files, how tested.
 
+## 2026-10-10 — style: drafting-sheet grid background
+- `app/globals.css`: added a two-tier graph-paper grid to `body` (20px fine
+  lines, 100px bold lines, both translucent black) so the concrete ground
+  behind cards/tiles reads as drafting-sheet paper, matching the corner
+  marks / ruler strip / title blocks already in place (D24).
+- Tested: `npm run build` clean, dev server smoke-tested on `/login`.
+
 ## 2026-10-10 — feat: dashboard restyle — "Drafting Room" (architectural)
 - Replaced "Midnight Bento" with an architectural-drawing-set theme:
   `app/globals.css` tokens (concrete `#E7E4DD` ground, `#111111` ink,
