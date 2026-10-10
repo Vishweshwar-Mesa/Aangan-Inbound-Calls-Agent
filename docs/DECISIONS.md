@@ -514,5 +514,10 @@ was tested against never mention one, so no cap is introduced here.
 the office figure, or some other threshold) — not asked for, not in the
 brief, not in any sample call. If Nikhil wants one later, it's a business
 decision for him, not something to guess at from one ambiguous sentence.
-**Not yet live:** needs re-pasting into the Vaani agent's system prompt,
-same as every `vani_agent_prompt.md` change.
+**Live:** pushed directly to the Vaani agent via `PATCH /api/agent/{id}/persona`
+(`identity.system_prompt`, confirmed found while answering "do I need to
+paste this in myself" — it does the same `update-training`/guardrails
+trick D25's writeup assumed required manual re-pasting). Confirmed via the
+response body: both this fix and D25's pricing line are present in the
+live `system_prompt`. **Every future `vani_agent_prompt.md` change can go
+through this same API call — no more manual re-pasting needed.**

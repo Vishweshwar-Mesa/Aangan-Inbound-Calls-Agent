@@ -2,6 +2,13 @@
 
 One entry per commit, newest first: date, what changed, files, how tested.
 
+## 2026-10-10 — docs: prompt updates can go through Vaani's API (no manual re-paste)
+- No code changed. Pushed the D31 (and D25) prompt text live to the Vaani
+  agent via `PATCH /api/agent/{id}/persona` (`identity.system_prompt`),
+  confirmed present in the response. Documented in D31 and `docs/CONTEXT.md`
+  that every future `vani_agent_prompt.md` change can go through this same
+  API call instead of manually re-pasting into the dashboard.
+
 ## 2026-10-10 — fix: ambiguous prompt wording caused a wrongful villa rejection (D31)
 - `vani_agent_prompt.md`: clarified the Context section so the ~3,000 sq ft
   figure applies only to offices/clinics/studios, with homes/villas

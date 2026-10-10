@@ -41,8 +41,11 @@ are read as config state, not incidents.
   wrongly rejected a 15,000 sq ft villa using an office-only size cap —
   fixed by clarifying `vani_agent_prompt.md`'s wording, no cap on homes
   (D31), confirmed against the real T12 precedent (5,500 sq ft villa,
-  QUALIFIED). No knowledge base/FAQ in use, deliberately. **Still open:**
-  agent **not published** (`published_at: null`); no phone number
+  QUALIFIED) — **pushed live** via `PATCH /api/agent/{id}/persona`
+  (`identity.system_prompt`), so every future prompt change can go through
+  that API instead of manual re-pasting. No knowledge base/FAQ in use,
+  deliberately. **Still open:** agent **not published** (`published_at:
+  null`); no phone number
   (deliberately deferred) — not blocking WebRTC-based testing.
 - **Pricing policy (D25, reverses D02):** the agent may state one fixed
   starting rate once it knows home vs. office (₹1,800/sq ft or
