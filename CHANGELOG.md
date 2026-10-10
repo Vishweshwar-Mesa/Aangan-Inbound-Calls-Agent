@@ -2,6 +2,20 @@
 
 One entry per commit, newest first: date, what changed, files, how tested.
 
+## 2026-10-10 — fix: ambiguous prompt wording caused a wrongful villa rejection (D31)
+- `vani_agent_prompt.md`: clarified the Context section so the ~3,000 sq ft
+  figure applies only to offices/clinics/studios, with homes/villas
+  explicitly "any size."
+- Found via reviewing a real WebRTC test call transcript: the live agent
+  rejected a 15,000 sq ft villa citing that figure, which grammatically
+  only modified offices/clinics/studios — an LLM over-generalization, not
+  a rule anyone wrote for homes. Confirmed against `rubric.txt`'s own test
+  set (T12: a 5,500 sq ft villa, QUALIFIED, no size objection) that no home
+  size cap exists anywhere in the brief or the real sample calls.
+- No cap introduced for homes — not asked for, not in the brief, not in
+  any sample call.
+- Needs re-pasting into the Vaani agent's system prompt to take effect.
+
 ## 2026-10-10 — fix: stale VANI_WEBHOOK_SECRET on Vercel production (D30)
 - No code changed. A real WebRTC test call in Vaani's dashboard (their
   built-in no-phone-number test feature) never reached our dashboard;

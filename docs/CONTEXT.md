@@ -29,25 +29,21 @@ are read as config state, not incidents.
 - **Phase 6 (Vaani) — webhook signature issue just fixed, unverified.**
   Platform is **Vaani AI** (`app.vaanivoice.ai`). Agent "Aangan Leads
   Inbound" (`VANI_AGENT_ID=3f53df76-f3ff-4514-b5e2-31fa586fa1bc`, found via
-  Vaani's `GET /api/agents` API, not the dashboard) has: the current system
-  prompt live (confirmed via API read-back — includes the D25 pricing
-  update), greeting set, language English-only (D22), webhook registered
-  and active (`APP_URL/api/vani/call-ended`, event `call_postprocessing`),
-  content-safety guardrails enabled (`level: strict`, all three on — set
-  via Vaani's `update-training` API). Vaani also has a **built-in WebRTC
-  test-call feature** (Conversations → History) — no phone number needed
-  to test the live agent. **A real test call via that feature didn't reach
-  our dashboard**: `vercel logs` showed the webhook fired but got 401'd
-  (signature mismatch) — Vercel's `VANI_WEBHOOK_SECRET` was stale (set 2
-  days before the webhook was registered today). Reset it to match
-  `.env.local` (D30) — **needs a fresh deploy + another test call to
-  confirm fixed**.
-  No knowledge base/FAQ in use, deliberately — see D-notes inline in
-  DECISIONS.md around D25/D26. **Still open:** agent is **not published**
-  (`published_at: null`); **no phone number** (`VANI_PHONE_NUMBER` empty,
-  deliberately deferred by request) — not blocking the dummy-call test
-  script in `seed/dummy-calls.md` anymore, since WebRTC test calls work
-  without one.
+  Vaani's `GET /api/agents` API) has: system prompt live, greeting set,
+  English-only (D22), webhook registered/active, content-safety guardrails
+  on (`level: strict` — set via Vaani's API). Vaani has a **built-in WebRTC
+  test-call feature** (Conversations → History) — no phone number needed.
+  **A real test call didn't reach our dashboard**: `vercel logs` showed the
+  webhook got 401'd — Vercel's `VANI_WEBHOOK_SECRET` was stale (set before
+  the webhook was registered today). Reset to match `.env.local` (D30) —
+  **needs a fresh deploy + another test call to confirm fixed**. A full
+  transcript review of that test call also found a live-agent bug: it
+  wrongly rejected a 15,000 sq ft villa using an office-only size cap —
+  fixed by clarifying `vani_agent_prompt.md`'s wording, no cap on homes
+  (D31), confirmed against the real T12 precedent (5,500 sq ft villa,
+  QUALIFIED). No knowledge base/FAQ in use, deliberately. **Still open:**
+  agent **not published** (`published_at: null`); no phone number
+  (deliberately deferred) — not blocking WebRTC-based testing.
 - **Pricing policy (D25, reverses D02):** the agent may state one fixed
   starting rate once it knows home vs. office (₹1,800/sq ft or
   ₹1,200/sq ft), never a computed total. `price_mentioned` now means

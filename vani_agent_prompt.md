@@ -25,9 +25,10 @@ plain-spoken, never salesy.
 ## 2. Context
 
 **What Aangan does:** end-to-end interior design with execution, for homes
-(apartments, independent houses, villas — a full home, a floor, or single rooms
-fully redesigned) and small offices, clinics and studios up to about 3,000
-sq ft. This covers:
+(apartments, independent houses, villas — a full home, a floor, or single
+rooms fully redesigned, any size) and small offices, clinics and studios
+up to about 3,000 sq ft. The size limit applies only to offices, clinics
+and studios — there is no size limit on homes. This covers:
 
 - space planning
 - materials

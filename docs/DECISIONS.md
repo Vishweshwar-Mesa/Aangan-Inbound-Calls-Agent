@@ -490,3 +490,29 @@ confirm the 401 is gone and a row lands in `calls`.
 **Rejected:** Debugging further by trying to read the stale value — not
 possible (Secret-type vars are write-only on Vercel); overwriting was
 strictly faster and no riskier.
+
+### 2026-10-10 · D31 · No size cap on homes/villas — the ~3,000 sq ft figure is offices-only
+**Decision:** Clarified `vani_agent_prompt.md`'s Context section so the
+~3,000 sq ft figure unambiguously applies only to "small offices, clinics
+and studios," with homes/villas explicitly "any size." No code/schema
+change — wording only.
+**Why:** Found via a real WebRTC test call (transcript reviewed directly):
+the live agent rejected a 15,000 sq ft villa as "beyond our current
+capacity," citing the 3,000 sq ft figure. That figure's sentence
+grammatically modifies only "small offices, clinics and studios," but an
+LLM reading it live over-generalized it to homes too. This directly
+contradicts our own test set, built from the real September transcripts:
+T12 is a 5,500 sq ft villa, explicitly QUALIFIED (`rubric.txt` line 230,
+no size objection at all), and `rubric.txt`'s own C1 check already states
+the ~3,000 sq ft threshold as commercial-only ("NEEDS_REVIEW: commercial
+over ~3,000 sq ft") — so the ambiguity existed only in the live prompt's
+wording, not in the rubric or the sample calls it was built from.
+**Confirmed directly:** nothing in `CLAUDE.md`, `rubric.txt`, or the T01–T20
+sample transcripts caps home/villa size — the brief and the real calls it
+was tested against never mention one, so no cap is introduced here.
+**Rejected:** Adding an explicit home size cap preemptively (e.g. matching
+the office figure, or some other threshold) — not asked for, not in the
+brief, not in any sample call. If Nikhil wants one later, it's a business
+decision for him, not something to guess at from one ambiguous sentence.
+**Not yet live:** needs re-pasting into the Vaani agent's system prompt,
+same as every `vani_agent_prompt.md` change.
