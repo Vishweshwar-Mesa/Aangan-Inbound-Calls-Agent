@@ -10,6 +10,7 @@ const SHEETS: { match: (path: string) => boolean; title: string; dwg: string }[]
   { match: (p) => p === "/review", title: "REVIEW QUEUE", dwg: "A-03" },
   { match: (p) => p === "/analytics", title: "ANALYTICS", dwg: "A-04" },
   { match: (p) => p === "/settings", title: "SETTINGS", dwg: "A-05" },
+  { match: (p) => p === "/profile", title: "PROFILE", dwg: "A-06" },
 ];
 
 export function SheetFooter() {

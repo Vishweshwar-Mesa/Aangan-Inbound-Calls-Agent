@@ -2,6 +2,26 @@
 
 One entry per commit, newest first: date, what changed, files, how tested.
 
+## 2026-10-10 — fix: drafting-sheet grid was hidden; add sign-out + profile page
+- `app/(dashboard)/layout.tsx`: removed a solid `bg-[#E7E4DD]` on the root
+  wrapper that painted over the body's graph-paper grid on every dashboard
+  page — the grid (added earlier) was only ever visible on `/login`.
+- `components/nav.tsx`: added a "Sign out" button and turned the email into
+  a link to a new profile page.
+- `app/(dashboard)/actions.ts` (new): `signOutAction`, `updateProfile`.
+- `app/(dashboard)/profile/page.tsx` (new, sheet A-06 in `sheet-footer.tsx`):
+  shows the signed-in email, a form to set a display name (stored on the
+  existing but previously-unused Auth.js `user.name` column), and a sign-out
+  button.
+- `lib/auth.ts`: added a `session` callback + `next-auth` module
+  augmentation so `session.user.id` is available (needed by `updateProfile`
+  to know which row to update).
+- Tested: `npm run build` clean; verified live with a throwaway DB session —
+  grid renders on dashboard pages (wrapper's solid background class
+  confirmed gone from rendered HTML), nav shows the sign-out button and
+  profile link, profile page read/write round-trip confirmed directly
+  against the `user` table.
+
 ## 2026-10-10 — feat: approved starting-rate pricing (reverses D02)
 - `vani_agent_prompt.md`: guardrail 1 now lets the agent state one fixed
   starting rate once it knows home vs. office (₹1,800/sq ft or

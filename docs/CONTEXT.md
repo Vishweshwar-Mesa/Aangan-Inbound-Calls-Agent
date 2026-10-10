@@ -65,8 +65,24 @@ are read as config state, not incidents.
   a per-page title-block footer (sheet numbers A-01 through A-05). Status
   chips now use drafting convention (solid=confirmed, dashed=provisional,
   grayed=excluded, orange=alarm). A two-tier graph-paper grid (20px fine /
-  100px bold lines) sits behind every page as the drafting-sheet ground.
-  Verified live against real seeded data, not just type-checked.
+  100px bold lines) sits behind every page as the drafting-sheet ground —
+  **fixed a bug** where `app/(dashboard)/layout.tsx`'s root wrapper div had
+  its own solid `bg-[#E7E4DD]`, painting over the grid on every dashboard
+  page (it was only ever visible on `/login`); removed so the body's grid
+  shows through everywhere. Verified live against real seeded data, not
+  just type-checked.
+- **Added sign-out and a profile page.** The nav had no way to sign out and
+  no profile/account page. `app/(dashboard)/actions.ts` now holds
+  `signOutAction` (wired into a button in `components/nav.tsx`, next to a
+  "north arrow") and `updateProfile` (lets a user set a display `name`,
+  stored on the existing Auth.js `user.name` column — unused until now).
+  New page `app/(dashboard)/profile/` (DWG A-06), linked from the nav's
+  email text. `lib/auth.ts` gained a `session` callback to put `user.id` on
+  `session.user` (needed so `updateProfile` knows which row to update) plus
+  the matching `next-auth` module augmentation. Verified live: read/write
+  round-trip tested directly against the `user` table with a throwaway
+  session (name saved, page re-fetch showed it back), nav renders the
+  sign-out button and profile link, no server errors.
 
 ## What exists in the repo
 

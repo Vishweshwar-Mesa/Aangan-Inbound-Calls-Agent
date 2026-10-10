@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
+import { signOutAction } from "@/app/(dashboard)/actions";
 import { NorthArrow } from "@/components/drafting-marks";
 import { cn } from "@/lib/utils";
 
@@ -51,9 +52,22 @@ export function Nav({
             );
           })}
         </nav>
-        <span className="ml-auto hidden truncate text-sm font-medium text-[#6B6659] sm:block">
+        <Link
+          href="/profile"
+          className={cn(
+            "ml-auto hidden truncate text-sm font-medium text-[#6B6659] underline-offset-4 hover:text-[#111111] hover:underline sm:block",
+          )}
+        >
           {email}
-        </span>
+        </Link>
+        <form action={signOutAction}>
+          <button
+            type="submit"
+            className="h-9 border-2 border-[#111111] px-3 text-xs font-bold tracking-wide uppercase text-[#111111] hover:bg-[#111111] hover:text-[#E7E4DD]"
+          >
+            Sign out
+          </button>
+        </form>
         <NorthArrow />
       </div>
     </header>

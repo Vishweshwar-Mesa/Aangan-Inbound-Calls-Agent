@@ -8,7 +8,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
   const [session, reviewCount] = await Promise.all([auth(), getReviewCount()]);
 
   return (
-    <div className="flex min-h-screen flex-col bg-[#E7E4DD]">
+    <div className="flex min-h-screen flex-col">
       <CornerMarks />
       <RulerStrip />
       <Nav reviewCount={reviewCount} email={session?.user?.email} />
