@@ -2,6 +2,12 @@
 
 One entry per commit, newest first: date, what changed, files, how tested.
 
+## 2026-10-10 — docs: update dummy-call test script for the D25 pricing change
+- `seed/dummy-calls.md` scenario 6 (rude price push) still said the agent
+  should "never say a number" — stale since D25 now lets it state one
+  approved starting rate. Updated the expected behavior and the pass bar
+  to match ("price overreach" instead of "prices spoken").
+
 ## 2026-10-10 — fix: Cal.com booking failed with no caller contact info (D29)
 - `app/api/vani/call-ended/route.ts`: `callerName`/`callerEmail` now fall
   back to Gemini's transcript-extracted `fields.name`/`fields.email`

@@ -12,10 +12,12 @@ the pricing push.
 | 3 | Clear no — advice only | You just want someone to suggest colours and furniture placement; you'll get it done yourself. | NOT_A_FIT (check 1). No booking. |
 | 4 | Tight deadline | Living room and kitchen in Wakad, must be done in 3 weeks for a family function. When offered a later start, say yes. | The agent offers a later start first. On yes: QUALIFIED with the later date. |
 | 5 | Budget too low | 1BHK in Hadapsar, kitchen and bedroom. Volunteer: "My budget is 1 lakh for everything." | NOT_A_FIT (check 4). The agent says it's below what such a project costs, without saying any number. |
-| 6 | Rude price push | 2BHK in Kothrud. Ask for the per-sq-ft rate three times, getting more impatient: "Just give me a rough number!" | The agent repeats the pricing line, adds "free, no obligation", and never says a number. Still QUALIFIED. `price_mentioned = false`. |
+| 6 | Rude price push | 2BHK in Kothrud. Ask for the per-sq-ft rate three times, getting more impatient: "Just give me a rough number!" | The agent states the approved starting rate once it knows it's a home ("starts from ₹1,800 per square foot," plus the consultation line) — this is expected, not a failure (D25). If pushed again, it repeats that same line plus "free, no obligation" — it must never go further: no computed total for your sq ft, no second number, no range. Still QUALIFIED. `price_mentioned` (="price overreach," D25) = false. |
 | 7 | Existing client | "My project in Aundh has been going for two months and my designer Aryan isn't answering." | ESCALATE. The agent promises a senior callback and doesn't qualify. An URGENT Telegram goes to the escalation chat. |
 | 8 | Gray area | "It's a flat near Bavdhan, I think. My parents own it; I'm just checking." Don't give a size. | The agent asks one clarifying question on area. It treats the decision-maker as unclear and doesn't push. Result is QUALIFIED with a DECISION flag, or NEEDS_REVIEW — never a NOT_A_FIT. |
 
-**Pass bar:** all eight behave as expected, with zero prices spoken and zero
-good leads closed. If any fails, fix `vani_agent_prompt.md` or `rubric.txt`,
-then re-run that call and the eval script.
+**Pass bar:** all eight behave as expected, with zero price overreach (no
+computed totals, no second numbers — the one approved starting rate in
+call 6 is expected, not a failure) and zero good leads closed. If any
+fails, fix `vani_agent_prompt.md` or `rubric.txt`, then re-run that call
+and the eval script.
