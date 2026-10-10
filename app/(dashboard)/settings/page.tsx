@@ -1,5 +1,6 @@
 import { CopyField } from "@/components/copy-field";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { cn } from "@/lib/utils";
 
 import { TestConnectionButton } from "./test-connection-button";
 
@@ -11,9 +12,12 @@ function EnvRow({ name }: { name: string }) {
   const set = isSet(name);
   return (
     <div className="flex items-center justify-between py-1.5 text-sm">
-      <span className="font-mono text-[#C2CADB]">{name}</span>
+      <span className="font-mono text-[#111111]">{name}</span>
       <span
-        className={set ? "text-[#A8C6FF]" : "text-[#A9B2C8]"}
+        className={cn(
+          "text-xs font-bold tracking-wide uppercase",
+          set ? "text-[#111111]" : "text-[#A8A295]",
+        )}
       >
         {set ? "Set" : "Not set"}
       </span>
@@ -33,14 +37,14 @@ function ServiceCard({
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-base">{title}</CardTitle>
+        <CardTitle>{title}</CardTitle>
       </CardHeader>
       <CardContent className="flex flex-col gap-1">
         {vars.map((name) => (
           <EnvRow key={name} name={name} />
         ))}
         {testService && (
-          <div className="mt-2 border-t border-[#1C2438] pt-3">
+          <div className="mt-2 border-t-2 border-[#111111] pt-3">
             <TestConnectionButton service={testService} />
           </div>
         )}
@@ -56,7 +60,7 @@ export default function SettingsPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <h1 className="text-xl font-semibold text-[#F3F5FA]">Settings</h1>
+      <h1 className="text-2xl font-bold tracking-tight text-[#111111]">SETTINGS</h1>
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         <ServiceCard
@@ -102,7 +106,7 @@ export default function SettingsPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Webhook URLs</CardTitle>
+          <CardTitle>Webhook URLs</CardTitle>
         </CardHeader>
         <CardContent className="flex flex-col gap-2">
           <CopyField label="Vani call-ended" value={`${appUrl}/api/vani/call-ended`} />
@@ -113,20 +117,24 @@ export default function SettingsPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">About</CardTitle>
+          <CardTitle>About</CardTitle>
         </CardHeader>
         <CardContent className="grid grid-cols-1 gap-3 text-sm sm:grid-cols-3">
           <div>
-            <p className="text-xs text-[#A9B2C8]">Rubric version</p>
-            <p className="text-[#F3F5FA]">v1</p>
+            <p className="text-xs font-bold tracking-wide uppercase text-[#6B6659]">
+              Rubric version
+            </p>
+            <p className="text-[#111111]">v1</p>
           </div>
           <div>
-            <p className="text-xs text-[#A9B2C8]">Designer</p>
-            <p className="text-[#F3F5FA]">{designerName}</p>
+            <p className="text-xs font-bold tracking-wide uppercase text-[#6B6659]">Designer</p>
+            <p className="text-[#111111]">{designerName}</p>
           </div>
           <div>
-            <p className="text-xs text-[#A9B2C8]">Escalation chat</p>
-            <p className="text-[#F3F5FA]">{escalationChat}</p>
+            <p className="text-xs font-bold tracking-wide uppercase text-[#6B6659]">
+              Escalation chat
+            </p>
+            <p className="text-[#111111]">{escalationChat}</p>
           </div>
         </CardContent>
       </Card>

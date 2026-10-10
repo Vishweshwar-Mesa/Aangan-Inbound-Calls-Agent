@@ -44,7 +44,7 @@ export default async function CallsPage({
   return (
     <div className="flex flex-col gap-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h1 className="text-xl font-semibold text-[#F3F5FA]">Calls</h1>
+        <h1 className="text-2xl font-bold tracking-tight text-[#111111]">CALLS</h1>
         <a
           href={`/api/calls/export?${new URLSearchParams({
             ...(route ? { route } : {}),
@@ -65,16 +65,14 @@ export default async function CallsPage({
               key={filter.label}
               href={buildHref(filter.route, q)}
               className={cn(
-                "flex h-9 items-center gap-1.5 rounded-full border px-3.5 text-sm font-medium transition-colors",
+                "flex h-9 items-center gap-1.5 border-2 px-3.5 text-sm font-bold tracking-wide uppercase transition-colors",
                 active
-                  ? "border-transparent bg-[#F3F5FA] text-[#080C18]"
-                  : "border-[#2A3450] text-[#C2CADB] hover:bg-[#1A2238]",
+                  ? "border-[#111111] bg-[#111111] text-[#E7E4DD]"
+                  : "border-[#111111] text-[#111111] hover:bg-[#DEDAD2]",
               )}
             >
               {filter.label}
-              <span className={active ? "text-[#080C18]/60" : "text-[#A9B2C8]"}>
-                {count}
-              </span>
+              <span className={active ? "text-[#A8A295]" : "text-[#6B6659]"}>{count}</span>
             </Link>
           );
         })}
@@ -106,7 +104,7 @@ export default async function CallsPage({
             <TableBody>
               {calls.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={5} className="py-8 text-center text-[#A9B2C8]">
+                  <TableCell colSpan={5} className="py-8 text-center text-[#6B6659]">
                     No calls match.
                   </TableCell>
                 </TableRow>
@@ -122,11 +120,11 @@ export default async function CallsPage({
                     </TableCell>
                     <TableCell>
                       <Link href={`/calls/${call.id}`} className="block">
-                        <span className="text-[#F3F5FA]">
+                        <span className="font-medium text-[#111111]">
                           {call.callerName ?? call.callerNumber ?? "Unknown"}
                         </span>
                         {typeof fields.locality === "string" && fields.locality && (
-                          <span className="block text-xs text-[#A9B2C8]">
+                          <span className="block text-xs text-[#6B6659]">
                             {fields.locality}
                           </span>
                         )}

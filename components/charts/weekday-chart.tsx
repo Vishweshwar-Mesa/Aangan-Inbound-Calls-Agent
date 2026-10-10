@@ -14,17 +14,17 @@ export function WeekdayChart({
   return (
     <ResponsiveContainer width="100%" height={160}>
       <BarChart data={chartData}>
-        <XAxis dataKey="label" stroke="#A9B2C8" fontSize={11} />
+        <XAxis dataKey="label" stroke="#6B6659" fontSize={11} />
         <Tooltip
-          cursor={{ fill: "rgba(255,255,255,0.04)" }}
+          cursor={{ fill: "rgba(17,17,17,0.06)" }}
           contentStyle={{
-            background: "#10172A",
-            border: "1px solid #1C2438",
-            borderRadius: 8,
-            color: "#F3F5FA",
+            background: "#FFFFFF",
+            border: "2px solid #111111",
+            borderRadius: 0,
+            color: "#111111",
           }}
         />
-        <Bar dataKey="count" radius={[4, 4, 0, 0]} fill="#A8C6FF" />
+        <Bar dataKey="count" radius={0} fill="#111111" />
       </BarChart>
     </ResponsiveContainer>
   );

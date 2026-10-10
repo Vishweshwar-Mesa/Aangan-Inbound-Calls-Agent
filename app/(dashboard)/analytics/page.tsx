@@ -23,8 +23,8 @@ function Stat({ label, value }: { label: string; value: React.ReactNode }) {
   return (
     <Card>
       <CardContent className="py-4">
-        <p className="text-xs text-[#A9B2C8]">{label}</p>
-        <p className="mt-1 text-xl font-semibold tabular-nums text-[#F3F5FA]">{value}</p>
+        <p className="text-xs font-bold tracking-wide uppercase text-[#6B6659]">{label}</p>
+        <p className="mt-1 text-xl font-bold tabular-nums text-[#111111]">{value}</p>
       </CardContent>
     </Card>
   );
@@ -45,12 +45,17 @@ function StatusBadge({ status }: { status: ScoreStatus }) {
     status === "on-track" ? "On track" : status === "below" ? "Below target" : "Not measured yet";
   const className =
     status === "on-track"
-      ? "text-[#A8C6FF] bg-[rgba(143,184,255,.15)]"
+      ? "bg-[#111111] text-[#E7E4DD] border-2 border-[#111111]"
       : status === "below"
-        ? "text-[#FF9B85] bg-[rgba(255,155,133,.15)]"
-        : "text-[#A9B2C8] bg-[#1A2238]";
+        ? "bg-transparent text-[#FF4B1F] border-2 border-[#FF4B1F]"
+        : "bg-transparent text-[#6B6659] border-2 border-dashed border-[#A8A295]";
   return (
-    <span className={cn("rounded-full px-2.5 py-1 text-xs font-medium", className)}>
+    <span
+      className={cn(
+        "px-2.5 py-1 text-xs font-bold tracking-wide uppercase whitespace-nowrap",
+        className,
+      )}
+    >
       {label}
     </span>
   );
@@ -189,17 +194,17 @@ export default async function AnalyticsPage({
   return (
     <div className="flex flex-col gap-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h1 className="text-xl font-semibold text-[#F3F5FA]">Analytics</h1>
+        <h1 className="text-2xl font-bold tracking-tight text-[#111111]">ANALYTICS</h1>
         <div className="flex flex-wrap items-center gap-2">
           {(["30", "60"] as const).map((d) => (
             <Link
               key={d}
               href={`/analytics?days=${d}`}
               className={cn(
-                "flex h-9 items-center rounded-full border px-3.5 text-sm font-medium",
+                "flex h-9 items-center border-2 border-[#111111] px-3.5 text-sm font-bold tracking-wide uppercase",
                 activeDays === d
-                  ? "border-transparent bg-[#F3F5FA] text-[#080C18]"
-                  : "border-[#2A3450] text-[#C2CADB] hover:bg-[#1A2238]",
+                  ? "bg-[#111111] text-[#E7E4DD]"
+                  : "text-[#111111] hover:bg-[#DEDAD2]",
               )}
             >
               {d} days
@@ -207,7 +212,7 @@ export default async function AnalyticsPage({
           ))}
           <form action="/analytics" className="flex items-center gap-1.5">
             <Input type="date" name="from" defaultValue={from} className="w-36" />
-            <span className="text-sm text-[#A9B2C8]">to</span>
+            <span className="text-sm font-medium text-[#6B6659]">to</span>
             <Input type="date" name="to" defaultValue={to} className="w-36" />
           </form>
         </div>
@@ -234,7 +239,7 @@ export default async function AnalyticsPage({
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Calls by hour (IST)</CardTitle>
+            <CardTitle>Calls by hour (IST)</CardTitle>
           </CardHeader>
           <CardContent>
             <HourChart data={summary.callsByHour} />
@@ -242,7 +247,7 @@ export default async function AnalyticsPage({
         </Card>
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Calls by weekday</CardTitle>
+            <CardTitle>Calls by weekday</CardTitle>
           </CardHeader>
           <CardContent>
             <WeekdayChart data={summary.callsByWeekday} />
@@ -252,25 +257,25 @@ export default async function AnalyticsPage({
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Scorecard</CardTitle>
+          <CardTitle>Scorecard</CardTitle>
         </CardHeader>
         <CardContent className="overflow-x-auto p-0">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-[#1C2438] text-left text-xs text-[#A9B2C8]">
-                <th className="px-4 py-2 font-medium">Metric</th>
-                <th className="px-4 py-2 font-medium">Target</th>
-                <th className="px-4 py-2 font-medium">Current</th>
-                <th className="px-4 py-2 font-medium">60-day trend</th>
-                <th className="px-4 py-2 font-medium">Status</th>
+              <tr className="border-b-2 border-[#111111] text-left text-xs font-bold tracking-wide uppercase text-[#6B6659]">
+                <th className="px-4 py-2">Metric</th>
+                <th className="px-4 py-2">Target</th>
+                <th className="px-4 py-2">Current</th>
+                <th className="px-4 py-2">60-day trend</th>
+                <th className="px-4 py-2">Status</th>
               </tr>
             </thead>
             <tbody>
               {scorecard.map((row) => (
-                <tr key={row.metric} className="border-b border-[#172036] last:border-0">
-                  <td className="px-4 py-3 text-[#F3F5FA]">{row.metric}</td>
-                  <td className="px-4 py-3 text-[#A9B2C8]">{row.target}</td>
-                  <td className="px-4 py-3 tabular-nums text-[#F3F5FA]">{row.value}</td>
+                <tr key={row.metric} className="border-b border-[#A8A295] last:border-0">
+                  <td className="px-4 py-3 font-medium text-[#111111]">{row.metric}</td>
+                  <td className="px-4 py-3 text-[#6B6659]">{row.target}</td>
+                  <td className="px-4 py-3 tabular-nums font-bold text-[#111111]">{row.value}</td>
                   <td className="px-4 py-3">
                     {row.sparkline ? <Sparkline data={row.sparkline} /> : "—"}
                   </td>

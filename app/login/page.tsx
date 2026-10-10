@@ -1,4 +1,5 @@
 import { isTestMode, signIn } from "@/lib/auth";
+import { CornerMarks } from "@/components/drafting-marks";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -19,9 +20,10 @@ export default async function LoginPage({
 
   return (
     <main className="flex min-h-screen items-center justify-center p-6">
+      <CornerMarks />
       <Card className="w-full max-w-sm">
         <CardHeader>
-          <CardTitle>Aangan Leads</CardTitle>
+          <CardTitle className="text-lg">Aangan Leads</CardTitle>
           <CardDescription>
             {sent
               ? "Check your inbox for a sign-in link."
@@ -30,7 +32,7 @@ export default async function LoginPage({
         </CardHeader>
         <CardContent>
           {isTestMode() && (
-            <p className="mb-4 rounded-md border border-amber-300 bg-amber-50 p-3 text-sm text-amber-900 dark:border-amber-900 dark:bg-amber-950 dark:text-amber-200">
+            <p className="mb-4 border-2 border-[#FF4B1F] p-3 text-sm text-[#111111]">
               ⚠️ Test mode: <code>ALLOWED_EMAILS</code> isn&apos;t set, so{" "}
               <strong>any email can sign in</strong>. Set it before real call
               data goes live here.

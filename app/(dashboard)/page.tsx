@@ -18,16 +18,12 @@ function Tile({
   accent?: boolean;
 }) {
   return (
-    <Card className={accent ? "bg-[#F3F5FA] text-[#080C18]" : undefined}>
+    <Card className={accent ? "bg-[#111111] text-[#E7E4DD]" : undefined}>
       <CardContent className="py-5">
-        <p
-          className={
-            accent ? "text-sm text-[#080C18]/70" : "text-sm text-[#A9B2C8]"
-          }
-        >
+        <p className={accent ? "text-xs font-bold tracking-wide uppercase text-[#A8A295]" : "text-xs font-bold tracking-wide uppercase text-[#6B6659]"}>
           {label}
         </p>
-        <p className="mt-1 text-2xl font-semibold tabular-nums">{value}</p>
+        <p className="mt-2 text-3xl font-bold tabular-nums">{value}</p>
       </CardContent>
     </Card>
   );
@@ -45,27 +41,27 @@ export default async function OverviewPage() {
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <h1 className="text-xl font-semibold text-[#F3F5FA]">Overview</h1>
-        <p className="text-sm text-[#A9B2C8]">Last {WINDOW_DAYS} days</p>
+        <h1 className="text-2xl font-bold tracking-tight text-[#111111]">OVERVIEW</h1>
+        <p className="text-sm font-medium text-[#6B6659]">LAST {WINDOW_DAYS} DAYS</p>
       </div>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <Tile label="Calls" value={stats.callCount} />
         <Tile label="Avg. call length" value={formatDuration(stats.avgDurationS)} />
         <Tile label="Cost this month" value={formatInr(stats.costThisMonthInr)} />
-        <Card className="bg-[#F3F5FA] text-[#080C18]">
+        <Card className="border-[#FF4B1F] bg-[#FF4B1F] text-[#FFFFFF]">
           <CardContent className="flex items-center justify-between gap-3 py-5">
             <div>
-              <p className="text-sm text-[#080C18]/70">Waiting for review</p>
-              <p className="mt-1 text-2xl font-semibold tabular-nums">
-                {stats.reviewCount}
+              <p className="text-xs font-bold tracking-wide uppercase text-white/80">
+                Waiting for review
               </p>
+              <p className="mt-2 text-3xl font-bold tabular-nums">{stats.reviewCount}</p>
             </div>
             <Link
               href="/review"
               className={buttonVariants({
                 size: "sm",
-                className: "bg-[#080C18] text-[#F3F5FA] hover:bg-[#080C18]/80",
+                className: "border-2 border-[#111111] bg-[#111111] text-[#FFFFFF] hover:bg-[#111111]/85",
               })}
             >
               Review now
@@ -76,38 +72,36 @@ export default async function OverviewPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Where calls went</CardTitle>
+          <CardTitle>Where calls went</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="flex h-3 overflow-hidden rounded-full bg-[#1A2238]">
+          <div className="flex h-4 overflow-hidden border-2 border-[#111111]">
             <div
-              className="bg-[#A8C6FF]"
+              className="bg-[#111111]"
               style={{ width: `${(stats.qualified / total) * 100}%` }}
               title={`Qualified: ${stats.qualified}`}
             />
             <div
-              className="bg-[#C2CADB]"
+              className="border-x-2 border-[#111111] bg-[#DEDAD2]"
               style={{ width: `${(stats.closed / total) * 100}%` }}
               title={`Closed: ${stats.closed}`}
             />
             <div
-              className="bg-[#FF9B85]"
+              className="bg-[#FF4B1F]"
               style={{ width: `${(stats.escalated / total) * 100}%` }}
               title={`Escalated: ${stats.escalated}`}
             />
           </div>
-          <div className="mt-3 flex flex-wrap gap-4 text-sm text-[#A9B2C8]">
+          <div className="mt-3 flex flex-wrap gap-5 text-sm font-medium text-[#6B6659]">
             <span className="flex items-center gap-1.5">
-              <span className="size-2 rounded-full bg-[#A8C6FF]" /> Qualified (
-              {stats.qualified})
+              <span className="size-2.5 bg-[#111111]" /> Qualified ({stats.qualified})
             </span>
             <span className="flex items-center gap-1.5">
-              <span className="size-2 rounded-full bg-[#C2CADB]" /> Closed (
+              <span className="size-2.5 border border-[#111111] bg-[#DEDAD2]" /> Closed (
               {stats.closed})
             </span>
             <span className="flex items-center gap-1.5">
-              <span className="size-2 rounded-full bg-[#FF9B85]" /> Escalated (
-              {stats.escalated})
+              <span className="size-2.5 bg-[#FF4B1F]" /> Escalated ({stats.escalated})
             </span>
           </div>
         </CardContent>
@@ -116,22 +110,22 @@ export default async function OverviewPage() {
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Next consultations</CardTitle>
+            <CardTitle>Next consultations</CardTitle>
           </CardHeader>
-          <CardContent className="flex flex-col gap-3">
+          <CardContent className="flex flex-col gap-1">
             {nextConsultations.length === 0 && (
-              <p className="text-sm text-[#A9B2C8]">Nothing booked yet.</p>
+              <p className="text-sm text-[#6B6659]">Nothing booked yet.</p>
             )}
             {nextConsultations.map((call) => (
               <Link
                 key={call.id}
                 href={`/calls/${call.id}`}
-                className="flex items-center justify-between rounded-lg px-2 py-1.5 hover:bg-[#1A2238]"
+                className="flex items-center justify-between px-2 py-1.5 hover:bg-[#DEDAD2]"
               >
-                <span className="text-sm text-[#F3F5FA]">
+                <span className="text-sm font-medium text-[#111111]">
                   {call.callerName ?? call.callerNumber ?? "Unknown caller"}
                 </span>
-                <span className="text-sm tabular-nums text-[#A9B2C8]">
+                <span className="text-sm tabular-nums text-[#6B6659]">
                   {formatDateTime(call.bookedAt)}
                 </span>
               </Link>
@@ -141,22 +135,20 @@ export default async function OverviewPage() {
 
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Latest calls</CardTitle>
+            <CardTitle>Latest calls</CardTitle>
           </CardHeader>
-          <CardContent className="flex flex-col gap-3">
-            {latestCalls.length === 0 && (
-              <p className="text-sm text-[#A9B2C8]">No calls yet.</p>
-            )}
+          <CardContent className="flex flex-col gap-1">
+            {latestCalls.length === 0 && <p className="text-sm text-[#6B6659]">No calls yet.</p>}
             {latestCalls.map((call) => (
               <Link
                 key={call.id}
                 href={`/calls/${call.id}`}
-                className="flex items-center justify-between gap-3 rounded-lg px-2 py-1.5 hover:bg-[#1A2238]"
+                className="flex items-center justify-between gap-3 px-2 py-1.5 hover:bg-[#DEDAD2]"
               >
-                <span className="truncate text-sm text-[#F3F5FA]">
+                <span className="truncate text-sm font-medium text-[#111111]">
                   {call.callerName ?? call.callerNumber ?? "Unknown caller"}
                 </span>
-                <span className="flex shrink-0 items-center gap-2 text-sm text-[#A9B2C8]">
+                <span className="flex shrink-0 items-center gap-2 text-sm text-[#6B6659]">
                   {formatDateTime(call.createdAt)}
                   <StatusChip route={call.finalRoute} />
                 </span>

@@ -2,6 +2,32 @@
 
 One entry per commit, newest first: date, what changed, files, how tested.
 
+## 2026-10-10 — feat: dashboard restyle — "Drafting Room" (architectural)
+- Replaced "Midnight Bento" with an architectural-drawing-set theme:
+  `app/globals.css` tokens (concrete `#E7E4DD` ground, `#111111` ink,
+  `#FF4B1F` the one alarm color, `--radius: 0`), Space Grotesk
+  (`app/layout.tsx`). See DECISIONS D24.
+- `components/ui/card.tsx`, `button.tsx`, `input.tsx`, `table.tsx`: fixed
+  hardcoded `rounded-xl`/ring styling that bypassed the theme variables, so
+  the palette swap actually reaches every shadcn primitive.
+- New shared chrome: `components/drafting-marks.tsx` (corner registration
+  marks, ruler strip, north-arrow glyph), `components/sheet-footer.tsx`
+  (per-page drawing title block, sheet numbers A-01–A-05), both wired into
+  `app/(dashboard)/layout.tsx`; `components/nav.tsx` redesigned to match.
+- `components/status-chip.tsx`: drafting-convention chip styles (solid
+  fill = confirmed, dashed = provisional, grayed = excluded, orange =
+  alarm) replacing the old color-coded pill chips.
+- Rewrote every page's hardcoded colors (Overview, Calls, Call detail,
+  Review queue, Analytics + its three chart components, Settings +
+  `copy-field.tsx`/`test-connection-button.tsx`) and the login page.
+- Confirmed the direction first on a 4-option mockup canvas (warm
+  minimalist, blueprint/technical, concrete/brutalist, refined Midnight
+  Bento) before implementing, per explicit request.
+- Tested: `npm run build` clean; all six pages + login verified live
+  against real seeded data (test session created directly in the DB,
+  removed after) — correct sheet numbers on every page (A-01 through
+  A-02.1), correct chip rendering, no console/server errors.
+
 ## 2026-10-10 — feat: persistent contacts, keyed by phone number
 - New `contacts` table (`lib/db/schema.ts`): `id`, `phone_number` (unique),
   `created_at`. `calls.contact_id` references it.

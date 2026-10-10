@@ -9,25 +9,25 @@ export function HourChart({ data }: { data: { hour: number; count: number }[] })
         <XAxis
           dataKey="hour"
           tickFormatter={(hour: number) => `${hour}`}
-          stroke="#A9B2C8"
+          stroke="#6B6659"
           fontSize={11}
           interval={2}
         />
         <Tooltip
-          cursor={{ fill: "rgba(255,255,255,0.04)" }}
+          cursor={{ fill: "rgba(17,17,17,0.06)" }}
           contentStyle={{
-            background: "#10172A",
-            border: "1px solid #1C2438",
-            borderRadius: 8,
-            color: "#F3F5FA",
+            background: "#FFFFFF",
+            border: "2px solid #111111",
+            borderRadius: 0,
+            color: "#111111",
           }}
           labelFormatter={(hour) => `${hour}:00`}
         />
-        <Bar dataKey="count" radius={[4, 4, 0, 0]}>
+        <Bar dataKey="count" radius={0}>
           {data.map((entry) => (
             <Cell
               key={entry.hour}
-              fill={entry.hour >= 10 && entry.hour < 19 ? "#A8C6FF" : "#2A3450"}
+              fill={entry.hour >= 10 && entry.hour < 19 ? "#111111" : "#A8A295"}
             />
           ))}
         </Bar>

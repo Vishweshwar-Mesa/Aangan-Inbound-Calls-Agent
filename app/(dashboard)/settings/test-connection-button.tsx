@@ -27,7 +27,7 @@ export function TestConnectionButton({ service }: { service: string }) {
       </Button>
       {result && (
         <span
-          className={`text-xs ${result.ok ? "text-[#A8C6FF]" : "text-[#FF9B85]"}`}
+          className={`text-xs font-bold ${result.ok ? "text-[#111111]" : "text-[#FF4B1F]"}`}
         >
           {result.ok ? "✓" : "✗"} {result.message}
         </span>

@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
+import { NorthArrow } from "@/components/drafting-marks";
 import { cn } from "@/lib/utils";
 
 const LINKS = [
@@ -23,13 +24,11 @@ export function Nav({
   const pathname = usePathname();
 
   return (
-    <header className="sticky top-0 z-10 border-b border-[#1C2438] bg-[#080C18]/95 backdrop-blur">
-      <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-3 px-4 py-3 sm:px-6">
-        <span className="mr-2 text-sm font-semibold tracking-tight text-[#F3F5FA]">
-          Aangan Leads
-        </span>
-        <nav className="flex flex-wrap items-center gap-1" aria-label="Main">
-          {LINKS.map((link) => {
+    <header className="sticky top-0 z-10 border-b-2 border-[#111111] bg-[#E7E4DD]">
+      <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-6 px-8 py-4">
+        <span className="text-lg font-bold tracking-tight text-[#111111]">AANGAN LEADS</span>
+        <nav className="flex flex-wrap border-2 border-[#111111]" aria-label="Main">
+          {LINKS.map((link, i) => {
             const active =
               link.href === "/" ? pathname === "/" : pathname.startsWith(link.href);
             return (
@@ -37,15 +36,14 @@ export function Nav({
                 key={link.href}
                 href={link.href}
                 className={cn(
-                  "flex h-11 items-center gap-1.5 rounded-full px-4 text-sm font-medium transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#A8C6FF]",
-                  active
-                    ? "bg-[#F3F5FA] text-[#080C18]"
-                    : "text-[#C2CADB] hover:bg-[#1A2238]",
+                  "flex h-11 items-center gap-2 px-4 text-sm font-bold uppercase tracking-wide transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-[#FF4B1F]",
+                  i > 0 && "border-l-2 border-[#111111]",
+                  active ? "bg-[#111111] text-[#E7E4DD]" : "text-[#111111] hover:bg-[#DEDAD2]",
                 )}
               >
                 {link.label}
                 {link.label === "Review" && reviewCount > 0 && (
-                  <span className="inline-flex min-w-5 items-center justify-center rounded-full bg-[#FFC27A] px-1.5 py-0.5 text-xs font-semibold text-[#080C18]">
+                  <span className="inline-flex min-w-5 items-center justify-center bg-[#FF4B1F] px-1.5 py-0.5 text-xs font-bold text-[#FFFFFF]">
                     {reviewCount}
                   </span>
                 )}
@@ -53,7 +51,10 @@ export function Nav({
             );
           })}
         </nav>
-        <span className="ml-auto truncate text-sm text-[#A9B2C8]">{email}</span>
+        <span className="ml-auto hidden truncate text-sm font-medium text-[#6B6659] sm:block">
+          {email}
+        </span>
+        <NorthArrow />
       </div>
     </header>
   );

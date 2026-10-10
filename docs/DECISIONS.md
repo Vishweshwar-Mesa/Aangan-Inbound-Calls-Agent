@@ -237,6 +237,33 @@ phone number is available.
 phone number is the one identifier a phone call always has, once Vaani
 surfaces it.
 
+### 2026-10-10 · D24 · Dashboard restyled: "Drafting Room" (architectural), replacing Midnight Bento
+**Decision:** Replaced CLAUDE.md Phase 4's "Midnight Bento" dark theme with
+an architectural-drawing-set look: concrete ground (`#E7E4DD`), hard black
+2px rules, zero border radius, Space Grotesk, and exactly one alarm color
+(`#FF4B1F`). Added drafting-convention chrome shared across all six pages:
+corner registration marks, a numbered ruler strip, a north-arrow glyph in
+the nav, and a title-block footer naming each page's "sheet" (Overview
+A-01, Calls A-02, Call detail A-02.1, Review A-03, Analytics A-04, Settings
+A-05). Status chips borrow drafting convention: solid fill = confirmed
+(Qualified), dashed outline = provisional (Needs review), grayed outline =
+excluded (Not a fit), solid orange = alarm (Escalated).
+**Why:** Requested directly — Aangan Studio is an architecture/interior
+design firm, so the dashboard should read as one of their own drawings,
+not a generic SaaS dark theme. Confirmed via a 4-option mockup canvas
+before implementing (warm minimalist, blueprint/technical, concrete/
+brutalist, refined Midnight Bento) — concrete/brutalist was picked, then
+the drafting details (registration marks, ruler, title block, north arrow)
+were added on top per follow-up request.
+**Implementation note:** `components/ui/card.tsx`, `button.tsx`,
+`input.tsx`, `table.tsx` (shadcn primitives) were edited directly rather
+than overridden per-usage — they had hardcoded `rounded-xl`/ring styling
+that wasn't driven by the theme's CSS variables, so a global palette swap
+alone wouldn't have reached them.
+**Rejected:** The other three mockup directions (warm minimalist,
+blueprint/technical, refined Midnight Bento) — still on the design canvas
+if reconsidered later.
+
 ### 2026-10-09 · D17 · Login test mode: empty `ALLOWED_EMAILS` lets any email sign in
 **Decision:** `lib/auth.ts`'s `signIn` callback allows any email when
 `ALLOWED_EMAILS` is empty, instead of CLAUDE.md's original "blocks every

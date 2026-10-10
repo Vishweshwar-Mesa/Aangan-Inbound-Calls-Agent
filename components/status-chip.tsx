@@ -1,38 +1,40 @@
 import { cn } from "@/lib/utils";
 
+// Borrows drafting-set convention: solid fill = confirmed, dashed outline =
+// provisional, grayed outline = excluded, solid orange = alarm.
 const ROUTE_STYLES: Record<string, { label: string; className: string }> = {
   QUALIFIED: {
     label: "Qualified",
-    className: "text-[#A8C6FF] bg-[rgba(143,184,255,.15)]",
+    className: "bg-[#111111] text-[#E7E4DD] border-2 border-[#111111]",
   },
   NEEDS_REVIEW: {
     label: "Needs review",
-    className: "text-[#FFC27A] bg-[rgba(255,194,122,.15)]",
+    className: "bg-transparent text-[#111111] border-2 border-dashed border-[#111111]",
   },
   NOT_A_FIT: {
     label: "Not a fit",
-    className: "text-[#C2CADB] bg-[#1A2238]",
+    className: "bg-transparent text-[#6B6659] border-2 border-[#A8A295]",
   },
   ESCALATE: {
     label: "Escalated",
-    className: "text-[#FF9B85] bg-[rgba(255,155,133,.15)]",
+    className: "bg-[#FF4B1F] text-[#FFFFFF] border-2 border-[#FF4B1F]",
   },
   NOT_ENQUIRY: {
     label: "Not an enquiry",
-    className: "text-[#A9B2C8] bg-[#1A2238]",
+    className: "bg-[#DEDAD2] text-[#6B6659] border-2 border-[#DEDAD2]",
   },
 };
 
 export function StatusChip({ route }: { route: string | null }) {
   const style = (route && ROUTE_STYLES[route]) || {
     label: route ?? "Missed",
-    className: "text-[#A9B2C8] bg-[#1A2238]",
+    className: "bg-[#DEDAD2] text-[#6B6659] border-2 border-[#DEDAD2]",
   };
 
   return (
     <span
       className={cn(
-        "inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium whitespace-nowrap",
+        "inline-flex items-center px-2.5 py-1 text-xs font-bold uppercase tracking-wide whitespace-nowrap",
         style.className,
       )}
     >

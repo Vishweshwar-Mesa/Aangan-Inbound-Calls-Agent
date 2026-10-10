@@ -26,15 +26,17 @@ const FIELD_LABELS: Record<string, string> = {
 function CriterionTile({ id, value }: { id: string; value: string }) {
   const style =
     value === "pass"
-      ? "text-[#A8C6FF] bg-[rgba(143,184,255,.1)]"
+      ? "bg-[#111111] text-[#E7E4DD] border-2 border-[#111111]"
       : value === "fail"
-        ? "text-[#FF9B85] bg-[rgba(255,155,133,.1)]"
-        : "text-[#FFC27A] bg-[rgba(255,194,122,.1)]";
+        ? "bg-transparent text-[#FF4B1F] border-2 border-[#FF4B1F]"
+        : "bg-transparent text-[#111111] border-2 border-dashed border-[#111111]";
 
   return (
-    <div className={cn("rounded-xl p-3", style)}>
-      <p className="text-xs font-medium opacity-80">{CRITERIA_LABELS[id] ?? id}</p>
-      <p className="mt-1 text-sm font-semibold capitalize">{value}</p>
+    <div className={cn("p-3", style)}>
+      <p className="text-xs font-bold tracking-wide uppercase opacity-80">
+        {CRITERIA_LABELS[id] ?? id}
+      </p>
+      <p className="mt-1 text-sm font-bold uppercase">{value}</p>
     </div>
   );
 }
@@ -60,12 +62,12 @@ export default async function CallDetailPage({
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <div className="flex items-center gap-3">
-            <h1 className="text-xl font-semibold text-[#F3F5FA]">
+            <h1 className="text-2xl font-bold tracking-tight text-[#111111]">
               {call.callerName ?? call.callerNumber ?? "Unknown caller"}
             </h1>
             <StatusChip route={call.finalRoute} />
           </div>
-          <p className="mt-1 text-sm text-[#A9B2C8]">
+          <p className="mt-1 text-sm font-medium text-[#6B6659]">
             {call.callerNumber} {call.callerEmail ? `· ${call.callerEmail}` : ""}
           </p>
           {call.flags && call.flags.length > 0 && (
@@ -73,7 +75,7 @@ export default async function CallDetailPage({
               {call.flags.map((flag) => (
                 <span
                   key={flag}
-                  className="rounded-full bg-[#1A2238] px-2 py-0.5 text-xs text-[#C2CADB]"
+                  className="border border-[#111111] px-2 py-0.5 text-xs font-bold tracking-wide uppercase text-[#111111]"
                 >
                   {flag}
                 </span>
@@ -98,24 +100,26 @@ export default async function CallDetailPage({
           {call.brief && (
             <Card>
               <CardHeader>
-                <CardTitle className="text-base">Designer brief</CardTitle>
+                <CardTitle>Designer brief</CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="whitespace-pre-wrap text-sm text-[#F3F5FA]">{call.brief}</p>
+                <p className="whitespace-pre-wrap text-sm text-[#111111]">{call.brief}</p>
               </CardContent>
             </Card>
           )}
 
           <Card>
             <CardHeader>
-              <CardTitle className="text-base">Fields</CardTitle>
+              <CardTitle>Fields</CardTitle>
             </CardHeader>
             <CardContent>
               <dl className="grid grid-cols-1 gap-x-6 gap-y-3 sm:grid-cols-2">
                 {Object.entries(FIELD_LABELS).map(([key, label]) => (
                   <div key={key}>
-                    <dt className="text-xs text-[#A9B2C8]">{label}</dt>
-                    <dd className="text-sm text-[#F3F5FA]">
+                    <dt className="text-xs font-bold tracking-wide uppercase text-[#6B6659]">
+                      {label}
+                    </dt>
+                    <dd className="text-sm text-[#111111]">
                       {fields[key] !== null && fields[key] !== undefined
                         ? String(fields[key])
                         : "—"}
@@ -124,7 +128,7 @@ export default async function CallDetailPage({
                 ))}
               </dl>
               {call.reasons && (
-                <p className="mt-4 border-t border-[#1C2438] pt-3 text-sm text-[#A9B2C8]">
+                <p className="mt-4 border-t-2 border-[#111111] pt-3 text-sm text-[#6B6659]">
                   {call.reasons}
                 </p>
               )}
@@ -134,16 +138,14 @@ export default async function CallDetailPage({
           {call.transcript && (
             <Card>
               <CardHeader>
-                <CardTitle className="text-base">Transcript</CardTitle>
+                <CardTitle>Transcript</CardTitle>
               </CardHeader>
               <CardContent>
                 {call.recordingUrl && (
                   // eslint-disable-next-line jsx-a11y/media-has-caption
                   <audio controls src={call.recordingUrl} className="mb-4 w-full" />
                 )}
-                <p className="whitespace-pre-wrap text-sm text-[#C2CADB]">
-                  {call.transcript}
-                </p>
+                <p className="whitespace-pre-wrap text-sm text-[#111111]">{call.transcript}</p>
               </CardContent>
             </Card>
           )}
@@ -152,10 +154,12 @@ export default async function CallDetailPage({
         <div className="flex flex-col gap-4">
           <Card>
             <CardHeader>
-              <CardTitle className="text-base">Consultation</CardTitle>
+              <CardTitle>Consultation</CardTitle>
             </CardHeader>
             <CardContent className="flex flex-col gap-2">
-              <p className="text-sm text-[#F3F5FA]">{formatDateTime(call.bookedAt)}</p>
+              <p className="text-sm font-medium text-[#111111]">
+                {formatDateTime(call.bookedAt)}
+              </p>
               {call.calcomBookingId ? (
                 <a
                   href={`https://cal.com/reschedule/${call.calcomBookingId}`}
@@ -166,14 +170,14 @@ export default async function CallDetailPage({
                   Reschedule in Cal.com
                 </a>
               ) : (
-                <p className="text-sm text-[#A9B2C8]">Not booked.</p>
+                <p className="text-sm text-[#6B6659]">Not booked.</p>
               )}
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader>
-              <CardTitle className="text-base">Nikhil's five checks</CardTitle>
+              <CardTitle>Nikhil&apos;s five checks</CardTitle>
             </CardHeader>
             <CardContent className="grid grid-cols-2 gap-2">
               {Object.keys(CRITERIA_LABELS).map((id) => (
@@ -184,23 +188,24 @@ export default async function CallDetailPage({
 
           <Card>
             <CardHeader>
-              <CardTitle className="text-base">Agent vs. re-score</CardTitle>
+              <CardTitle>Agent vs. re-score</CardTitle>
             </CardHeader>
             <CardContent className="flex flex-col gap-1 text-sm">
-              <p className="text-[#A9B2C8]">
-                Agent: <span className="text-[#F3F5FA]">{call.agentRoute ?? "—"}</span>
+              <p className="text-[#6B6659]">
+                Agent: <span className="font-medium text-[#111111]">{call.agentRoute ?? "—"}</span>
               </p>
-              <p className="text-[#A9B2C8]">
-                Re-score: <span className="text-[#F3F5FA]">{call.geminiRoute ?? "—"}</span>
+              <p className="text-[#6B6659]">
+                Re-score:{" "}
+                <span className="font-medium text-[#111111]">{call.geminiRoute ?? "—"}</span>
               </p>
               <p
                 className={cn(
-                  "mt-2 font-medium",
+                  "mt-2 text-xs font-bold tracking-wide uppercase",
                   agreed === null
-                    ? "text-[#A9B2C8]"
+                    ? "text-[#6B6659]"
                     : agreed
-                      ? "text-[#A8C6FF]"
-                      : "text-[#FFC27A]",
+                      ? "text-[#111111]"
+                      : "text-[#FF4B1F]",
                 )}
               >
                 {agreed === null ? "Not comparable" : agreed ? "Agreed" : "Disagreed"}
@@ -211,14 +216,16 @@ export default async function CallDetailPage({
           <Card>
             <CardContent className="grid grid-cols-2 gap-3 py-5 text-sm">
               <div>
-                <p className="text-xs text-[#A9B2C8]">Received</p>
-                <p className="text-[#F3F5FA]">{formatDateTime(call.createdAt)}</p>
+                <p className="text-xs font-bold tracking-wide uppercase text-[#6B6659]">
+                  Received
+                </p>
+                <p className="text-[#111111]">{formatDateTime(call.createdAt)}</p>
               </div>
               <div>
-                <p className="text-xs text-[#A9B2C8]">Length</p>
-                <p className="tabular-nums text-[#F3F5FA]">
-                  {formatDuration(call.durationS)}
+                <p className="text-xs font-bold tracking-wide uppercase text-[#6B6659]">
+                  Length
                 </p>
+                <p className="tabular-nums text-[#111111]">{formatDuration(call.durationS)}</p>
               </div>
             </CardContent>
           </Card>
@@ -226,7 +233,7 @@ export default async function CallDetailPage({
           {history.length > 0 && (
             <Card>
               <CardHeader>
-                <CardTitle className="text-base">
+                <CardTitle>
                   Caller history ({history.length} other call
                   {history.length === 1 ? "" : "s"})
                 </CardTitle>
@@ -236,9 +243,9 @@ export default async function CallDetailPage({
                   <Link
                     key={past.id}
                     href={`/calls/${past.id}`}
-                    className="flex items-center justify-between rounded-lg px-2 py-1.5 text-sm hover:bg-[#1A2238]"
+                    className="flex items-center justify-between px-2 py-1.5 text-sm hover:bg-[#DEDAD2]"
                   >
-                    <span className="text-[#C2CADB]">{formatDateTime(past.createdAt)}</span>
+                    <span className="text-[#111111]">{formatDateTime(past.createdAt)}</span>
                     <StatusChip route={past.finalRoute} />
                   </Link>
                 ))}

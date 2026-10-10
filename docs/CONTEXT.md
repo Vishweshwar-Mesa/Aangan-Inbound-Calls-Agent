@@ -38,11 +38,14 @@ are read as config state, not incidents.
   history" card on the Call detail page. Real Vaani calls will have
   `contact_id = null` until a real caller-phone-number field is found (see
   D21) — tested directly against the linking logic instead.
-- **Dashboard restyle in progress:** moving from "Midnight Bento" toward an
-  architectural-drafting look (concrete/brutalist base + corner
-  registration marks, grid ruler, title-block footer, north-arrow glyph) —
-  mocked up on a canvas, confirmed with the user, not yet applied to the
-  real six pages.
+- **Dashboard restyled: "Drafting Room"** (D24) — replaced "Midnight Bento"
+  with an architectural-drawing-set look across all six pages: concrete
+  ground, hard black rules, zero radius, Space Grotesk, one orange alarm
+  color, corner registration marks, a ruler strip, a north-arrow glyph, and
+  a per-page title-block footer (sheet numbers A-01 through A-05). Status
+  chips now use drafting convention (solid=confirmed, dashed=provisional,
+  grayed=excluded, orange=alarm). Verified live against real seeded data,
+  not just type-checked.
 
 ## What exists in the repo
 
@@ -60,10 +63,12 @@ are read as config state, not incidents.
   `confirmDecline`/`sendToDesigner` in `review/actions.ts`), Analytics
   (`analytics/`, with the full scorecard), Settings (`settings/`, env-var
   status + per-service "Test connection" + copyable webhook URLs). Data
-  layer: `lib/queries.ts`, `lib/analytics.ts`. "Midnight Bento" design
+  layer: `lib/queries.ts`, `lib/analytics.ts`. "Drafting Room" design
   tokens live in `app/globals.css` (`:root`/`.dark` are intentionally
-  identical — one fixed dark theme, no toggle); Manrope font; Recharts for
-  the hour/weekday/sparkline charts.
+  identical — one fixed light theme, no toggle — see D24); Space Grotesk
+  font; Recharts for the hour/weekday/sparkline charts;
+  `components/drafting-marks.tsx` and `sheet-footer.tsx` for the shared
+  drafting chrome.
 - **Verified live** (session created directly in the DB for testing, then
   deleted): all six pages render correctly with real data; `confirmDecline`
   and `sendToDesigner` both tested via their actual rendered forms (not just

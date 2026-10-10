@@ -4,7 +4,7 @@ import { Line, LineChart, ResponsiveContainer, YAxis } from "recharts";
 
 export function Sparkline({
   data,
-  color = "#A8C6FF",
+  color = "#111111",
 }: {
   data: { value: number | null }[];
   color?: string;
@@ -13,7 +13,7 @@ export function Sparkline({
   const hasData = data.some((d) => d.value !== null);
 
   if (!hasData) {
-    return <span className="text-xs text-[#A9B2C8]">not measured yet</span>;
+    return <span className="text-xs text-[#6B6659]">not measured yet</span>;
   }
 
   return (

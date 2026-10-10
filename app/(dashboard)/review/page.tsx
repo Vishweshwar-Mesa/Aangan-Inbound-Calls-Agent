@@ -14,15 +14,15 @@ export default async function ReviewPage() {
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <h1 className="text-xl font-semibold text-[#F3F5FA]">Review queue</h1>
-        <p className="text-sm text-[#A9B2C8]">
-          {queue.length} call{queue.length === 1 ? "" : "s"} waiting
+        <h1 className="text-2xl font-bold tracking-tight text-[#111111]">REVIEW QUEUE</h1>
+        <p className="text-sm font-medium text-[#6B6659]">
+          {queue.length} CALL{queue.length === 1 ? "" : "S"} WAITING
         </p>
       </div>
 
       {queue.length === 0 && (
         <Card>
-          <CardContent className="py-10 text-center text-[#A9B2C8]">
+          <CardContent className="py-10 text-center text-[#6B6659]">
             Nothing to review.
           </CardContent>
         </Card>
@@ -42,11 +42,11 @@ export default async function ReviewPage() {
                   <div>
                     <Link
                       href={`/calls/${call.id}`}
-                      className="font-medium text-[#F3F5FA] hover:underline"
+                      className="font-bold text-[#111111] hover:underline"
                     >
                       {call.callerName ?? call.callerNumber ?? "Unknown caller"}
                     </Link>
-                    <p className="text-xs text-[#A9B2C8]">
+                    <p className="text-xs font-medium text-[#6B6659]">
                       {formatDateTime(call.createdAt)}
                     </p>
                   </div>
@@ -58,7 +58,7 @@ export default async function ReviewPage() {
                     {failedChecks.map(([id]) => (
                       <span
                         key={id}
-                        className="rounded-full bg-[rgba(255,155,133,.15)] px-2.5 py-1 text-xs font-medium text-[#FF9B85]"
+                        className="border-2 border-[#FF4B1F] px-2.5 py-1 text-xs font-bold tracking-wide uppercase text-[#FF4B1F]"
                       >
                         {CRITERIA_LABELS[id] ?? id} failed
                       </span>
@@ -66,11 +66,9 @@ export default async function ReviewPage() {
                   </div>
                 )}
 
-                {call.reasons && (
-                  <p className="text-sm text-[#C2CADB]">{call.reasons}</p>
-                )}
+                {call.reasons && <p className="text-sm text-[#111111]">{call.reasons}</p>}
 
-                <div className="flex gap-2 border-t border-[#1C2438] pt-3">
+                <div className="flex gap-2 border-t-2 border-[#111111] pt-3">
                   <form action={confirmDecline}>
                     <input type="hidden" name="callId" value={call.id} />
                     <Button type="submit" variant="outline" size="sm">
