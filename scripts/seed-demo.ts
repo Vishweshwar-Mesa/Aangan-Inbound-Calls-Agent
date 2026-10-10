@@ -83,6 +83,7 @@ function extractCallerName(transcript: string): string | null {
 async function main() {
   const { db } = await import("../lib/db");
   const { calls } = await import("../lib/db/schema");
+  const { getOrCreateContact } = await import("../lib/contacts");
 
   const testSet: TestSet = JSON.parse(
     readFileSync(path.join(process.cwd(), "seed/test-set.json"), "utf-8"),
@@ -98,6 +99,7 @@ async function main() {
     const callerName = extractCallerName(transcript);
     const num = index + 1;
     const callerNumber = `+9198000000${String(num).padStart(2, "0")}`;
+    const contactId = await getOrCreateContact(callerNumber);
     const isQualified = call.expected_route === "QUALIFIED";
     const isDeclined =
       call.expected_route === "NOT_A_FIT" || call.expected_route === "NOT_ENQUIRY";
@@ -107,6 +109,7 @@ async function main() {
       .values({
         vaniCallId: `demo-${call.id.toLowerCase()}`,
         rawPayload: null,
+        contactId,
         callerNumber,
         callerName,
         callerEmail: callerName ? `${call.id.toLowerCase()}@example.com` : null,
@@ -131,6 +134,7 @@ async function main() {
       .onConflictDoUpdate({
         target: calls.vaniCallId,
         set: {
+          contactId,
           callerNumber,
           callerName,
           startedAt,

@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { StatusChip } from "@/components/status-chip";
@@ -5,7 +6,7 @@ import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatDateTime, formatDuration } from "@/lib/format";
 import { getDealUrl } from "@/lib/hubspot";
-import { getCallById } from "@/lib/queries";
+import { getCallById, getContactCallHistory } from "@/lib/queries";
 import { CRITERIA_LABELS } from "@/lib/rubric-labels";
 import { cn } from "@/lib/utils";
 
@@ -52,6 +53,7 @@ export default async function CallDetailPage({
   const agreed =
     !call.agentRoute || !call.geminiRoute ? null : call.agentRoute === call.geminiRoute;
   const dealUrl = call.hubspotDealId ? await getDealUrl(call.hubspotDealId) : null;
+  const history = call.contactId ? await getContactCallHistory(call.contactId, call.id) : [];
 
   return (
     <div className="flex flex-col gap-6">
@@ -220,6 +222,29 @@ export default async function CallDetailPage({
               </div>
             </CardContent>
           </Card>
+
+          {history.length > 0 && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base">
+                  Caller history ({history.length} other call
+                  {history.length === 1 ? "" : "s"})
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="flex flex-col gap-1">
+                {history.map((past) => (
+                  <Link
+                    key={past.id}
+                    href={`/calls/${past.id}`}
+                    className="flex items-center justify-between rounded-lg px-2 py-1.5 text-sm hover:bg-[#1A2238]"
+                  >
+                    <span className="text-[#C2CADB]">{formatDateTime(past.createdAt)}</span>
+                    <StatusChip route={past.finalRoute} />
+                  </Link>
+                ))}
+              </CardContent>
+            </Card>
+          )}
         </div>
       </div>
     </div>

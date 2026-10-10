@@ -1,4 +1,4 @@
-import { and, asc, desc, eq, gte, isNotNull, isNull, or, sql } from "drizzle-orm";
+import { and, asc, desc, eq, gte, isNotNull, isNull, ne, or, sql } from "drizzle-orm";
 
 import { db } from "./db";
 import { calls } from "./db/schema";
@@ -144,6 +144,20 @@ export async function listReviewQueue() {
       ),
     )
     .orderBy(asc(calls.createdAt));
+}
+
+// Other calls from the same persistent contact (repeat callers, dropped-call
+// redials — rubric.txt 1B/1C), newest first, excluding the current call.
+export async function getContactCallHistory(contactId: string, excludeCallId: string) {
+  return db
+    .select({
+      id: calls.id,
+      createdAt: calls.createdAt,
+      finalRoute: calls.finalRoute,
+    })
+    .from(calls)
+    .where(and(eq(calls.contactId, contactId), ne(calls.id, excludeCallId)))
+    .orderBy(desc(calls.createdAt));
 }
 
 export async function getCallById(id: string) {

@@ -2,6 +2,23 @@
 
 One entry per commit, newest first: date, what changed, files, how tested.
 
+## 2026-10-10 — feat: persistent contacts, keyed by phone number
+- New `contacts` table (`lib/db/schema.ts`): `id`, `phone_number` (unique),
+  `created_at`. `calls.contact_id` references it.
+- `lib/contacts.ts`: `getOrCreateContact(phoneNumber)` — looks up or
+  creates a contact, race-safe via `onConflictDoNothing` + re-select.
+  Wired into `app/api/vani/call-ended/route.ts` (both insert and the
+  idempotent-upsert path) and `scripts/seed-demo.ts`.
+- Call detail page: a "Caller history" card listing the contact's other
+  calls (date + outcome chip, linked). See DECISIONS D23.
+- Tested: `getOrCreateContact` directly — same number reuses the same id,
+  a different number gets a new one, `null` phone returns `null` without
+  creating a row. Two calls manually linked to one contact confirmed the
+  "Caller history" card renders the right call, date, and chip. `npm run
+  seed-demo` re-run backfilled `contact_id` for all 20 demo calls (20
+  distinct contacts, one per transcript's synthesized number). `npm run
+  build` clean, migration applied to the real database.
+
 ## 2026-10-09 — fix: real Vaani AI webhook auth (HMAC, not shared header)
 - Checked the actual voice platform's docs (Vaani AI, `docs.vaanivoice.ai`)
   before Phase 6 instead of using Phase 2's placeholder. Two real-world

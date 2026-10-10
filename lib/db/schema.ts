@@ -65,6 +65,17 @@ export const verificationTokens = pgTable(
   (vt) => [primaryKey({ columns: [vt.identifier, vt.token] })],
 );
 
+// A persistent identity per phone number, so multiple calls from the same
+// caller (repeat callers, dropped-call redials — rubric.txt section 1B/1C)
+// link together under one id, separate from each call's own row id. Not in
+// CLAUDE.md's original schema — added per explicit request. See
+// docs/DECISIONS.md D23.
+export const contacts = pgTable("contacts", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  phoneNumber: text("phone_number").notNull().unique(),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
+});
+
 // The app's one real table. See CLAUDE.md "Data model" for the column notes.
 export const calls = pgTable(
   "calls",
@@ -72,6 +83,9 @@ export const calls = pgTable(
     id: uuid("id").primaryKey().defaultRandom(),
     vaniCallId: text("vani_call_id").notNull().unique(),
     rawPayload: jsonb("raw_payload"),
+    // Our own persistent caller identity (see `contacts` above) — distinct
+    // from `hubspotContactId` below, which is HubSpot's own contact id.
+    contactId: uuid("contact_id").references(() => contacts.id),
     callerNumber: text("caller_number"),
     callerName: text("caller_name"),
     callerEmail: text("caller_email"),
@@ -113,5 +127,6 @@ export const calls = pgTable(
     index("calls_started_at_idx").on(table.startedAt),
     index("calls_final_route_idx").on(table.finalRoute),
     index("calls_review_outcome_idx").on(table.reviewOutcome),
+    index("calls_contact_id_idx").on(table.contactId),
   ],
 );

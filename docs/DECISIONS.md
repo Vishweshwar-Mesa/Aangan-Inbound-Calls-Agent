@@ -190,6 +190,53 @@ to production.
 arrives" — the real mechanism was discoverable now, so there was no reason
 to ship the known-wrong placeholder.
 
+### 2026-10-09 · D22 · Vaani agent language: English only, no Hindi fallback
+**Decision:** The Vaani agent's Language setting is **English**, with no
+fallback language enabled.
+**Why:** Vaani's language config only supports "primary language X, with
+English as a fallback" — not the reverse (no "English primary, Hindi
+fallback" option exists). Given all 20 real September transcripts are in
+English, and rubric.txt describes Hindi callers as occasional ("Hindi
+enquiries occur"), making English the primary and *only* language keeps
+full accuracy for the common case rather than degrading it to
+(imperfectly) support the rare one.
+**Trade-off, stated plainly:** a caller who speaks Hindi will not get
+native-language support — the agent's own prompt still says "follow the
+caller's language" (`vani_agent_prompt.md` section 1), but that's now
+aspirational, not backed by the platform's speech engine. Left the prompt
+text as-is rather than rewriting it to only promise English, since the
+instruction is harmless if a bilingual LLM still partially copes, and
+rewriting the voice/qualification prompt is a bigger, riskier change than
+this phase calls for.
+**Rejected:** Hindi primary + English fallback (the only alternative the
+platform offers) — would degrade the ~100% English call volume to help an
+occasional case.
+**Revisit if:** Vaani adds an English-primary-with-fallback option, or
+Hindi call volume turns out higher than the September sample suggests.
+
+### 2026-10-10 · D23 · Added a `contacts` table, keyed by phone number
+**Decision:** New `contacts` table (`lib/db/schema.ts`): `id`, `phone_number`
+(unique), `created_at`. `calls.contact_id` references it. Looked up or
+created via `lib/contacts.ts`'s `getOrCreateContact()`, called from the
+call-ended webhook (`app/api/vani/call-ended/route.ts`) and from
+`scripts/seed-demo.ts`. The Call detail page shows a "Caller history" card
+of the contact's other calls.
+**Why:** Requested explicitly — every call should carry a persistent
+identity for its caller, not just its own row id. This also gives
+rubric.txt's REPEAT CALLER and DROPPED CALL scenarios (section 1B/1C) a
+real backing: multiple calls from one number are now linkable, where
+before each call was an island.
+**Caveat, stated plainly:** `normalizeVaniPayload()` currently returns
+`callerNumber: null` for every real Vaani call (no phone field is
+documented anywhere — see D21), so `contact_id` will stay null for real
+calls until that's resolved. The seeded demo data (20 distinct numbers,
+one per transcript) and the webhook code path were both tested directly
+to confirm the linking logic itself is correct and ready for when a real
+phone number is available.
+**Rejected:** Deriving a contact key from something else (email, name) —
+phone number is the one identifier a phone call always has, once Vaani
+surfaces it.
+
 ### 2026-10-09 · D17 · Login test mode: empty `ALLOWED_EMAILS` lets any email sign in
 **Decision:** `lib/auth.ts`'s `signIn` callback allows any email when
 `ALLOWED_EMAILS` is empty, instead of CLAUDE.md's original "blocks every

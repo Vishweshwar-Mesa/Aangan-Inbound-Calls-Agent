@@ -1,6 +1,7 @@
 import { eq } from "drizzle-orm";
 import { NextResponse, after } from "next/server";
 
+import { getOrCreateContact } from "@/lib/contacts";
 import { db } from "@/lib/db";
 import { calls } from "@/lib/db/schema";
 import { type RescoreResult, rescoreCall } from "@/lib/gemini";
@@ -65,11 +66,14 @@ export async function POST(req: Request) {
     );
   }
 
+  const contactId = await getOrCreateContact(normalized.callerNumber);
+
   const [row] = await db
     .insert(calls)
     .values({
       vaniCallId: normalized.vaniCallId,
       rawPayload: raw,
+      contactId,
       callerNumber: normalized.callerNumber,
       callerName: normalized.callerName,
       callerEmail: normalized.callerEmail,
@@ -85,6 +89,7 @@ export async function POST(req: Request) {
       target: calls.vaniCallId,
       set: {
         rawPayload: raw,
+        contactId,
         callerNumber: normalized.callerNumber,
         callerName: normalized.callerName,
         callerEmail: normalized.callerEmail,

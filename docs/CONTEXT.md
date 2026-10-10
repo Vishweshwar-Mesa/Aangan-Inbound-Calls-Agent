@@ -1,7 +1,7 @@
 # Context — current state
 
 Rewritten in place after every change. Keep it under 150 lines. Last
-updated: 2026-10-09, end of Phase 5.
+updated: 2026-10-10, mid-Phase 6.
 
 ## Where we are
 
@@ -25,9 +25,24 @@ are read as config state, not incidents.
 - **Login is in test mode:** `ALLOWED_EMAILS` is empty, so any email can
   sign in. The login page shows a visible warning. Set `ALLOWED_EMAILS`
   (locally and on Vercel) for real access control — see DECISIONS D17.
-- **Next step:** Phase 6 (Vani voice agent setup). `VANI_API_KEY` is set;
-  still need `VANI_AGENT_ID` and `VANI_PHONE_NUMBER` from the Vani
-  dashboard once an agent is created there.
+- **Phase 6 in progress.** The voice platform is **Vaani AI**
+  (`app.vaanivoice.ai`), not a generic "Vani Labs" — confirmed from the
+  account. Agent "Aangan Leads Inbound" created: prompt pasted, greeting
+  message set, language **English only, no Hindi fallback** (D22 — platform
+  only supports X-primary-with-English-fallback, not the reverse; all 20
+  real transcripts are English), "Use Previous Call Contexts" enabled,
+  "Feed Context via API" left off. Telephony (phone number) and Webhooks
+  not yet configured — still need `VANI_AGENT_ID`/`VANI_PHONE_NUMBER`.
+- **Added a `contacts` table** (D23): every call now links to a persistent
+  per-phone-number identity via `contact_id`, surfaced as a "Caller
+  history" card on the Call detail page. Real Vaani calls will have
+  `contact_id = null` until a real caller-phone-number field is found (see
+  D21) — tested directly against the linking logic instead.
+- **Dashboard restyle in progress:** moving from "Midnight Bento" toward an
+  architectural-drafting look (concrete/brutalist base + corner
+  registration marks, grid ruler, title-block footer, north-arrow glyph) —
+  mocked up on a canvas, confirmed with the user, not yet applied to the
+  real six pages.
 
 ## What exists in the repo
 
