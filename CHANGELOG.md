@@ -2,6 +2,22 @@
 
 One entry per commit, newest first: date, what changed, files, how tested.
 
+## 2026-10-10 — feat: approved starting-rate pricing (reverses D02)
+- `vani_agent_prompt.md`: guardrail 1 now lets the agent state one fixed
+  starting rate once it knows home vs. office (₹1,800/sq ft or
+  ₹1,200/sq ft), never a computed total. `rubric.txt` section 0 updated to
+  match.
+- `lib/gemini.ts`: redefined what sets `price_mentioned` — now only pricing
+  *beyond* the approved line, not any price language at all, so the
+  sanctioned starting-rate line no longer trips `PRICE_SPOKEN` or the
+  escalation alert.
+- `app/(dashboard)/analytics/page.tsx`, `scripts/eval.ts`: relabeled
+  "Prices spoken" to "Price overreach" to match the new meaning (column/
+  field names unchanged).
+- See DECISIONS.md D25 for the full reasoning and what's still forbidden.
+- Tested: `npm run build` clean. Not yet tested against a live call — the
+  updated prompt still needs to be re-pasted into the Vaani dashboard.
+
 ## 2026-10-10 — phase-6: Vaani agent ID + webhook registered
 - Looked up the "Aangan Leads Inbound" agent's id via Vaani's
   `GET /api/agents?search=` list-agents API (using the existing

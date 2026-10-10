@@ -166,7 +166,7 @@ export default async function AnalyticsPage({
       sparkline: series("hangUpRate"),
     },
     {
-      metric: "Prices spoken",
+      metric: "Price overreach",
       target: "0",
       value: String(summary.pricesSpoken),
       status: summary.pricesSpoken === 0 ? "on-track" : "below",
@@ -225,7 +225,7 @@ export default async function AnalyticsPage({
         <Stat label="Booking rate" value={pct(summary.bookingRate)} />
         <Stat label="Bounce rate" value={pct(summary.bounceRate)} />
         <Stat label="Hang-ups" value={pct(summary.hangUpRate)} />
-        <Stat label="Prices spoken" value={summary.pricesSpoken} />
+        <Stat label="Price overreach" value={summary.pricesSpoken} />
         <Stat label="Avg. call length" value={formatDuration(summary.avgDurationS)} />
         <Stat label="Cost per call" value={formatInr(summary.costPerCall ?? 0)} />
         <Stat

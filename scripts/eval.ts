@@ -89,7 +89,7 @@ async function main() {
       (falseNegatives.length ? ` — ${falseNegatives.map((r) => r.id).join(", ")}` : ""),
   );
   console.log(
-    `Prices spoken: ${pricesSpoken.length}` +
+    `Price overreach (beyond the approved starting-rate line, D25): ${pricesSpoken.length}` +
       (pricesSpoken.length ? ` — ${pricesSpoken.map((r) => r.id).join(", ")}` : ""),
   );
 

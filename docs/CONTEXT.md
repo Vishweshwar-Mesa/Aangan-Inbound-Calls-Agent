@@ -45,6 +45,14 @@ are read as config state, not incidents.
   experience, persona); it's dashboard-only. Telephony (phone number)
   deliberately deferred — still need `VANI_PHONE_NUMBER` once a number is
   provisioned and linked to the agent.
+- **Pricing policy changed (D25, reverses D02):** the agent may now state
+  one fixed starting rate once it knows home vs. office — ₹1,800/sq ft or
+  ₹1,200/sq ft — but never a computed caller-specific total. Updated in
+  `vani_agent_prompt.md`, `rubric.txt`, and the `price_mentioned` definition
+  in `lib/gemini.ts` (now means "beyond the approved line", not "any price
+  at all"); dashboard metric relabeled "Price overreach". **Not yet live**:
+  the updated `vani_agent_prompt.md` still needs to be re-pasted into the
+  Vaani agent's system prompt for real calls to use it.
 - **Added a `contacts` table** (D23): every call now links to a persistent
   per-phone-number identity via `contact_id`, surfaced as a "Caller
   history" card on the Call detail page. Real Vaani calls will have

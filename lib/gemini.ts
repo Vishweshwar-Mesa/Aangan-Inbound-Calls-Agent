@@ -72,8 +72,13 @@ function getSystemInstruction(): string {
   return (
     getRubric() +
     '\n\nReturn only the JSON described in section 7 of the rubric. Also ' +
-    "return price_mentioned: true if the assistant said any number, range " +
-    "or per-sq-ft figure about cost."
+    "return price_mentioned: true ONLY if the assistant said pricing " +
+    "information beyond the one approved starting-rate line in section 0 " +
+    "(D25) — e.g. a computed total, a second number, a range, or any price " +
+    "language that isn't that exact approved line. Saying the single " +
+    "approved starting rate (home ₹1,800/sq ft or office ₹1,200/sq ft, " +
+    "followed by the consultation line) is expected, sanctioned behavior " +
+    "and must NOT set price_mentioned true."
   );
 }
 

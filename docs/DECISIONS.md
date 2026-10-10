@@ -313,3 +313,44 @@ avoids requiring a separate Anthropic billing account for this build.
 task specifically needs Claude over Gemini; the original split (Gemini for
 scoring, Claude for the brief) was a stack choice, not a capability
 requirement.
+
+### 2026-10-10 · D25 · The agent may state one approved starting rate (reverses D02)
+**Decision:** The agent may now say exactly one pricing line once it knows
+whether the property is a home or an office: home "starts from ₹1,800 per
+square foot"; office "starts from ₹1,200 per square foot" (the floor of
+each type's lowest band in `lib/pricing.ts`), always followed by the
+existing "exact cost depends on the site, materials, and scope — your
+designer will cover it at the consultation" line. It must never go further:
+no computed total for their square footage, no second number, no range. If
+it doesn't yet know home vs. office, it asks that first. Updated in
+`vani_agent_prompt.md` (guardrail 1) and `rubric.txt` (section 0).
+`price_mentioned` (Gemini re-score, `lib/gemini.ts`) is redefined to mean
+"said pricing beyond the one approved line" rather than "said any price at
+all" — saying the approved line is sanctioned and must not set it true, so
+it no longer triggers the `PRICE_SPOKEN` flag or the escalation alert in
+`lib/post-call.ts` (unchanged code — the flag's new meaning makes this
+correct automatically). The dashboard's "Prices spoken" scorecard
+metric/stat is relabeled "Price overreach" (`app/(dashboard)/analytics/page.tsx`)
+to match; the underlying `price_mentioned` column/field name is unchanged.
+**Why:** Requested directly, citing the original brief from Nikhil: "the
+system should be able to quote our standard per-square-foot pricing so
+people don't have to wait for that." A fixed, publishable starting rate
+(the same floor figure the firm could put on its own website) is a much
+narrower disclosure than a caller-specific computed quote — it doesn't
+anchor what *their* project will cost, which was D02's core objection.
+**Rejected:** A single blended rate for every caller regardless of
+property type (considered, but under/overstates the two segments'
+actual floors); computing a caller-specific total from their stated square
+footage (this is exactly what D02 identified as the anchoring risk, and
+stays forbidden).
+**Still true from D02:** no per-project estimate, no caller-specific range,
+no budget-matching language — only the one fixed, type-based floor rate.
+**Not yet done:** the live Vaani agent's system prompt must be re-pasted
+from the updated `vani_agent_prompt.md` for this to take effect on real
+calls — editing the file alone doesn't change what's deployed in Vaani's
+dashboard.
+**Test-data note:** T02 and T13 (`seed/transcripts/`) were recorded before
+this decision; on those actual calls the agent fully deflected rather than
+stating the new starting rate, so `price_mentioned` is correctly still
+`false` for both — this doesn't change the eval pass bar's "0 price
+overreach" expectation across the existing 20-call test set.
